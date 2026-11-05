@@ -1,0 +1,22 @@
+{
+  "name": "no-referee",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.ts\"",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0",
+    "nostr-tools": "^2.25.5",
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/ws": "^8.18.2",
+    "typescript": "^7.0.2"
+  }
+}
