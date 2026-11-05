@@ -45,7 +45,7 @@ The project extends topic 13 (commit-reveal) into a multi-party game and uses to
 | Original | Now | Why |
 |---|---|---|
 | Local models through Ollama | Hosted free models through OpenRouter | The laptop has no GPU, so local models are too heavy |
-| One tribute per laptop | Everything on one laptop so far | Simpler. Multiple laptops needs the relay opened to the network |
+| One tribute per laptop | Both supported: one laptop by default, or one tribute per laptop | One laptop is more reliable for a demo |
 | Off-the-shelf self-hosted relay | Our own small relay | Docker isn't installed, and we need to inject faults |
 | A new seed each round | One seed chain per game | The secret is shared once instead of every round |
 | Timeouts | Majority vote | Nostr timestamps are self-reported, so no rule can depend on time |

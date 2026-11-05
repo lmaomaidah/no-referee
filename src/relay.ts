@@ -1,3 +1,4 @@
+import { networkInterfaces } from 'node:os'
 import { WebSocketServer } from 'ws'
 import type { WebSocket } from 'ws'
 import { verifyEvent } from 'nostr-tools/pure'
@@ -23,11 +24,11 @@ const matches = (f: Filter, e: Event) =>
  * `fault` sees each validly signed EVENT. The sender gets OK true whatever it answers, so a
  * dropping or delaying relay cannot be told from an honest one. Varying delayMs reorders.
  */
-export async function startRelay({ port, fault }: { port: number, fault?: Fault }) {
+export async function startRelay({ port, fault, host = '127.0.0.1' }: { port: number, fault?: Fault, host?: string }) {
   // ponytail: unbounded in-memory store, fine for one game; cap it if a relay ever outlives a demo.
   const store = new Map<string, Event>()
   const subs = new Map<WebSocket, Map<string, Filter[]>>()
-  const wss = new WebSocketServer({ port, host: '127.0.0.1' })
+  const wss = new WebSocketServer({ port, host })
   await new Promise((ok, no) => { wss.once('listening', ok); wss.once('error', no) })
 
   const send = (ws: WebSocket, ...msg: unknown[]) => ws.send(JSON.stringify(msg))
@@ -84,4 +85,14 @@ export async function startRelay({ port, fault }: { port: number, fault?: Fault 
       wss.close(err => (err ? no(err) : ok()))
     }),
   }
+}
+
+/** `node src/relay.ts [port]`: a relay other laptops can reach. Local games never need this. */
+if (import.meta.main) {
+  const port = Number(process.argv[2] ?? 7777)
+  await startRelay({ port, host: '0.0.0.0' })
+  const lan = Object.values(networkInterfaces()).flat().filter(a => a?.family === 'IPv4' && !a.internal)
+  console.log('Relay running. Give other players one of these addresses:')
+  for (const a of lan) console.log(`  ws://${a!.address}:${port}`)
+  console.log('Press Ctrl+C to stop it after the game.')
 }

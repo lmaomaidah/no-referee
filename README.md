@@ -20,6 +20,7 @@ npm install
 node src/arena.ts          # one game with scripted bots, under a minute
 node src/arena.ts --cheat equivocate   # bot game with a cheater, no requests needed
 npx serve viewer           # watch the last game in your browser
+# Several laptops? See docs/TWO-LAPTOPS.md
 node src/arena.ts --demo   # AI game built for the demo: 12 rounds, about 39 of your 50 daily requests
 node src/injection.ts      # prompt-injection trials, about 42 requests, needs .env
 node src/injection.ts --report   # print the results so far, no requests
@@ -42,6 +43,7 @@ Last updated Nov 5, 2026.
 - [x] Replay viewer (`viewer/index.html`): painted arena, one action at a time with captions, injection attempts and their effects, CAUGHT stamp
 - [x] In-game injection demo: Injector bot, plus a scripted Gullible bot that shows what being fooled looks like
 - [x] Report draft ([docs/REPORT.md](docs/REPORT.md)), TODO sections need model results
+- [x] Multi-laptop mode (`src/join.ts`), one-laptop mode is still the default
 - [x] Demo mode with a hard time limit per model (`--demo`), timing not yet measured on real models
 - [x] Encrypted agent chat, trash talk and last words (tests pass, not yet seen with real models because the daily limit ran out)
 
@@ -50,7 +52,7 @@ Last updated Nov 5, 2026.
 | Task | Owner | Notes |
 |---|---|---|
 | See real AI games and trash talk | Open | Run `node src/arena.ts --demo` after the daily limit resets |
-| Two-laptop mode | Open | Optional, one-laptop mode stays the default |
+| Try two-laptop mode on real laptops | Everyone | Tested with separate processes only. Follow [docs/TWO-LAPTOPS.md](docs/TWO-LAPTOPS.md) |
 | Polish the replay viewer | Teammates | Styled version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
 | Prompt-injection experiment | Open | Built (`src/injection.ts`), not yet run. Results go in `results/injection.jsonl`, commit them |
 | Reliable model access | Open | See known problems |
@@ -68,7 +70,5 @@ Last updated Nov 5, 2026.
   scripted bot played instead. `node src/arena.ts --ai 6` prints these counts.
 - **Gemini is not in use.** Both keys tried returned 403: the free tier isn't available
   for those projects and Google asks for billing.
-- **One laptop only for now.** The relay accepts local connections only. Two-laptop mode isn't
-  built yet.
 - **Scripted bots can't be fooled.** Only the Gullible bot reacts to injection, and that's scripted.
   Real results need real models.

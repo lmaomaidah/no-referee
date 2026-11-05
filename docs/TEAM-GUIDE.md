@@ -66,7 +66,8 @@ ignores `.env`.
 | `src/llm.ts` | AI strategy and trash talk. The model only picks a number from a menu of legal moves |
 | `src/models.ts` | The list of free models in use |
 | `src/injection.ts` | The prompt-injection experiment |
-| `src/relay.ts` | Our Nostr relay |
+| `src/relay.ts` | Our Nostr relay. Run it directly to host a multi-laptop game |
+| `src/join.ts` | Join a multi-laptop game, see [TWO-LAPTOPS.md](TWO-LAPTOPS.md) |
 | `src/arena.ts` | Runs a whole game |
 | `viewer/` | Replay viewer: styled and working, open to polish |
 
@@ -74,6 +75,7 @@ Useful docs:
 
 - [Viewer guide](VIEWER-GUIDE.md): the UI task, with the data format and requirements
 - [Plain explanation](EXPLAINED.md): the project with no jargon
+- [Several laptops](TWO-LAPTOPS.md): how to run a game across machines
 - [Report draft](REPORT.md): edit it on GitHub as results come in
 - [Project proposal, updated](PROPOSAL.md): what we are actually building
 - [Original proposal](original-proposal.pdf): what we first submitted

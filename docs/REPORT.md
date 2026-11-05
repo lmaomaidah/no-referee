@@ -82,7 +82,7 @@ the same replay code to decide what to do next, so play and verification can't d
 ## 5. Implementation
 
 TypeScript on Node 24 using `nostr-tools`, `@noble/hashes` and `ws`. We wrote a small NIP-01 relay
-so we could inject faults. Agents are hosted models on OpenRouter, reached over its chat API. A
+so we could inject faults. Games run on one laptop, or with each player on its own machine. Agents are hosted models on OpenRouter, reached over its chat API. A
 model only picks a number from a menu of legal moves, and can add one chat line. If a model
 fails, a scripted bot plays that turn and the failure is counted. The budget was $0.
 
