@@ -71,6 +71,7 @@ rather than changing the sample.
 
 1. The 8x8 board with the storm, supply drops and each tribute.
 2. Each tribute's name, HP, item, and whether they are alive, out or caught.
+   What happened in the round, worked out from `moves` and the states before and after.
 3. Play, pause, step, and a timeline to jump to any round. Mark the rounds with cheats.
 4. For each cheat: who, which round, the type in plain words, and the evidence ids.
 5. The winner, or a clear "game stalled" message.
