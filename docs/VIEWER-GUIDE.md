@@ -19,6 +19,9 @@ long as `viewer/` can be opened with a static file server. Plain HTML, CSS and J
 is enough. Load `sample-replay.json` with `fetch()` until real games exist. It's
 hand-written fake data in the exact real format.
 
+For a real game, run `npm install`, then `node src/arena.ts`. It takes under a minute and writes
+`viewer/replay.json` in the same format.
+
 ## The data
 
 ```ts
