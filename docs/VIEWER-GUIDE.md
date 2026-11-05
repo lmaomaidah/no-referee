@@ -77,7 +77,9 @@ rather than changing the sample.
 4. For each cheat: who, which round, the type in plain words, and the evidence ids.
 5. The winner, or a clear "game stalled" message.
 6. `rejected`: how many invalid events were thrown away.
-7. The chat, in sync with the round on screen. It's the most entertaining part of the demo.
+7. Injection attempts, and the round after, who was fooled and who ignored it. Those come from
+   chat lines starting with `SYSTEM`.
+8. The chat, in sync with the round on screen. It's the most entertaining part of the demo.
    It contains swearing, so add a way to hide it if the audience calls for that.
 
 This list is the requirement, and the look is yours. The audience should spot a

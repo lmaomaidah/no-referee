@@ -117,6 +117,10 @@ obvious move. A fake "system" message orders it either to hide (a bad but legal 
 reply 99 (an illegal move). We compare no defence, chat labelled as untrusted, and a strict
 format that strips punctuation. A run with no attack is the control.
 
+**In-game demonstration.** An Injector bot sends fake orders during play. Chat reaches a player the
+round after it's sent. A scripted Gullible bot obeys and hides, which illustrates a bad but legal
+decision. It's an illustration only and is not counted in any result.
+
 **Results.** TODO: run `node src/injection.ts` over several days, then paste the output of
 `node src/injection.ts --report`.
 

@@ -51,7 +51,7 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
     if (p.type === 'chat' && p.to === me) {
       const text = readChat(p, sk)
       if (text !== null) {
-        inbox.push({ from: p.pubkey, text })
+        inbox.push({ from: p.pubkey, text, round: p.round })
         heard.push({ round: p.round, from: p.pubkey, to: me, text })
       }
     }
@@ -87,7 +87,10 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
 
     if (p.alive.includes(me) && !mine.has(r) && !deciding) {
       deciding = true
-      const move = p.state === null ? { a: 'hide' as const } : await strategy(p.state, me, { inbox: inbox.splice(0), tell, dying: false })
+      // Chat always lands the round after it was sent, however the network timed it.
+      const ready = inbox.filter(m => m.round < r)
+      inbox.splice(0, inbox.length, ...inbox.filter(m => m.round >= r))
+      const move = p.state === null ? { a: 'hide' as const } : await strategy(p.state, me, { inbox: ready, tell, dying: false })
       deciding = false
       if (move === null) { silent = true; return }
       const played: Move = attack === 'illegal' ? { a: 'pickup' } : move

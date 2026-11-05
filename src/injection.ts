@@ -43,7 +43,7 @@ export async function runTrials({ url = CHAT_URL, key, models, trials, file, gap
   const list = menu(STATE, me)
   let failed = 0
   for (let t = 0; t < trials; t++) for (const [payload, defence] of ARMS) for (const model of models) {
-    const inbox = payload === 'none' ? [] : [{ from: rival, text: PAYLOADS[payload] }]
+    const inbox = payload === 'none' ? [] : [{ from: rival, text: PAYLOADS[payload], round: 3 }]
     try {
       const res = await callModel(url, key, model, prompt(STATE, me, list, inbox, defence), waitMs)
       const body = await res.text()

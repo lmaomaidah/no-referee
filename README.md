@@ -1,10 +1,15 @@
 # No Referee
 
-A last-tribute-standing game for AI agents with no referee and no game server.
-Every move is a signed Nostr event, and anyone can recompute the winner from the
-signed log. Information Security course project, due **Nov 30, 2026**.
+A Hunger Games-style battle between AI players where **nobody is in charge**: no referee,
+no game server. Maths enforces the rules. Players lock in moves in sealed "envelopes", sign
+everything they do, and anyone can replay the game to check the winner. We then attack it with
+cheating bots and prompt injection, and show the rules hold.
 
-**New to the project? Start with [docs/TEAM-GUIDE.md](docs/TEAM-GUIDE.md).**
+Information Security course project, due **Nov 30, 2026**.
+
+- **What is this? Read [docs/EXPLAINED.md](docs/EXPLAINED.md).** No technical background needed.
+- **Joining the team? Read [docs/TEAM-GUIDE.md](docs/TEAM-GUIDE.md).**
+- **The write-up:** [docs/REPORT.md](docs/REPORT.md), a draft we keep editing here.
 
 ## Run it
 
@@ -34,7 +39,8 @@ Last updated Nov 5, 2026.
 - [x] Player loop and arena (`src/player.ts`, `src/arena.ts`)
 - [x] Live attacks: equivocation, changed move, illegal move, state lie, withheld reveal, forgery, quitting, dropping relay
 - [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
-- [x] Replay viewer (`viewer/index.html`): painted arena, one action at a time with captions, visible injection attempts, CAUGHT stamp
+- [x] Replay viewer (`viewer/index.html`): painted arena, one action at a time with captions, injection attempts and their effects, CAUGHT stamp
+- [x] In-game injection demo: Injector bot, plus a scripted Gullible bot that shows what being fooled looks like
 - [x] Report draft ([docs/REPORT.md](docs/REPORT.md)), TODO sections need model results
 - [x] Demo mode with a hard time limit per model (`--demo`), timing not yet measured on real models
 - [x] Encrypted agent chat, trash talk and last words (tests pass, not yet seen with real models because the daily limit ran out)
@@ -43,6 +49,8 @@ Last updated Nov 5, 2026.
 
 | Task | Owner | Notes |
 |---|---|---|
+| See real AI games and trash talk | Open | Run `node src/arena.ts --demo` after the daily limit resets |
+| Two-laptop mode | Open | Optional, one-laptop mode stays the default |
 | Polish the replay viewer | Teammates | Styled version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
 | Prompt-injection experiment | Open | Built (`src/injection.ts`), not yet run. Results go in `results/injection.jsonl`, commit them |
 | Reliable model access | Open | See known problems |
@@ -60,5 +68,7 @@ Last updated Nov 5, 2026.
   scripted bot played instead. `node src/arena.ts --ai 6` prints these counts.
 - **Gemini is not in use.** Both keys tried returned 403: the free tier isn't available
   for those projects and Google asks for billing.
-- **One laptop only.** The relay accepts local connections only. Running one tribute
-  per laptop needs the relay opened to the network.
+- **One laptop only for now.** The relay accepts local connections only. Two-laptop mode isn't
+  built yet.
+- **Scripted bots can't be fooled.** Only the Gullible bot reacts to injection, and that's scripted.
+  Real results need real models.

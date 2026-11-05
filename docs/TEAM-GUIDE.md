@@ -1,7 +1,8 @@
 # Team guide
 
-Everything you need to pick up work on No Referee. The current list of what's done
-and what's left is in the [README](../README.md).
+Everything you need to pick up work on No Referee. For a plain explanation of the project,
+read [EXPLAINED.md](EXPLAINED.md) first. The current list of what's done and what's left is in
+the [README](../README.md).
 
 ## The idea in one minute
 
@@ -36,7 +37,9 @@ npm install
 node src/arena.ts
 ```
 
-That runs a full game with scripted bots and writes `viewer/replay.json`.
+That runs a full game with scripted bots and writes `viewer/replay.json`. To watch it, run
+`npx serve viewer` and open the address it prints. `node src/arena.ts --cheat equivocate` plays
+a game with a cheater in it. Other cheats: `change-move`, `illegal`, `lie-state`, `withhold`.
 
 To run AI players, make your own free key at openrouter.ai and create a file called
 `.env` in the project folder:
@@ -59,7 +62,7 @@ ignores `.env`.
 | `src/game.ts` | The game rules, as pure functions |
 | `src/verify.ts` | Replays a log and finds the winner and cheaters |
 | `src/player.ts` | One live player. Also holds the red-team attacks |
-| `src/bots.ts` | Scripted strategies |
+| `src/bots.ts` | Scripted players: normal, Injector, Gullible, quitter |
 | `src/llm.ts` | AI strategy and trash talk. The model only picks a number from a menu of legal moves |
 | `src/models.ts` | The list of free models in use |
 | `src/injection.ts` | The prompt-injection experiment |
@@ -70,6 +73,8 @@ ignores `.env`.
 Useful docs:
 
 - [Viewer guide](VIEWER-GUIDE.md): the UI task, with the data format and requirements
+- [Plain explanation](EXPLAINED.md): the project with no jargon
+- [Report draft](REPORT.md): edit it on GitHub as results come in
 - [Project proposal, updated](PROPOSAL.md): what we are actually building
 - [Original proposal](original-proposal.pdf): what we first submitted
 - [Design doc](superpowers/specs/2026-11-05-no-referee-design.md): the exact protocol and rules
@@ -92,6 +97,9 @@ Run `node src/injection.ts`. It stops by itself at the daily limit, keeps what i
 to `results/injection.jsonl`, so commit that file. `--report` prints the table without using
 requests. Two trials per arm (the default) is not enough to claim much, so keep adding trials. Each OpenRouter account gets 50 free requests a day, so spread runs across
 teammates' keys and start early.
+
+In-game, the Injector bot sends fake orders and the Gullible bot obeys them, so you can see the
+effect. That bot is scripted and proves nothing about real models. Only this experiment does.
 
 The claim to prove: injection can push an agent into a bad decision, but never a
 rule-breaking move. `src/llm.test.ts` already covers the menu side of that.

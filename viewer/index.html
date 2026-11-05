@@ -82,6 +82,9 @@
   .float.word { font-size: clamp(14px, 2.2vw, 21px); color: var(--bone); }
   .float.loot { font-size: clamp(14px, 2.2vw, 21px); color: var(--mustard); }
   .float.burn { color: #ffb02e; }
+  .float.fooled { color: #ffe04a; font-size: clamp(22px, 3.6vw, 34px); }
+  .unit.dazed svg.body { animation: dazed 1.4s ease-in-out; }
+  @keyframes dazed { 25% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } 75% { transform: rotate(-10deg); } }
   @keyframes pop { from { transform: translate(-50%, -70%) scale(.4); opacity: 1; } to { transform: translate(-50%, -70%) scale(1.5); opacity: 0; } }
   @keyframes rise { from { transform: translate(-50%, -120%); opacity: 1; } to { transform: translate(-50%, calc(-120% - 46px)); opacity: 0; } }
 
@@ -127,6 +130,7 @@
   .act { padding: 2px 0; }
   .act.hit, .act.died { color: #ff8a7a; font-weight: 700; }
   .act.loot { color: var(--mustard); }
+  .act.fooled { color: #ffe04a; font-weight: 700; }
   #chat { max-height: 200px; overflow-y: auto; }
   .line { padding: 3px 0; overflow-wrap: anywhere; }
   .line b { color: var(--mustard); }
@@ -384,6 +388,10 @@ function events(round, prev, s) {
   const standing = (x, y) => alive.find(k => s.players[k].x === x && s.players[k].y === y)
   for (const k of alive) {
     const m = round.moves?.[k], p = s.players[k], was = prev.players[k], who = nameOf(k)
+    const orders = (game.chat ?? []).filter(c => c.round === round.round - 1 && c.to === k && /^system\b/i.test(c.text))
+    if (orders.length) out.push(m?.a === 'hide'
+      ? { k, a: 'fooled', text: `${who} fell for the fake order and hid` }
+      : { k, a: 'resisted', text: `${who} ignored the fake order` })
     if (m?.a === 'attack') {
       const [dx, dy] = STEP[m.dir], x = p.x + dx, y = p.y + dy, t = standing(x, y)
       const base = { k, dx, dy, x, y, t }
@@ -395,7 +403,7 @@ function events(round, prev, s) {
       const item = prev.drops.find(d => d.x === p.x && d.y === p.y)?.item
       if (item) out.push({ k, a: 'loot', item, text: item === 'medkit' ? `${who} used a medkit` : `${who} grabbed a ${item}` })
     }
-    if (m?.a === 'hide') out.push({ k, a: 'hid', text: `${who} hid` })
+    if (m?.a === 'hide' && !orders.length) out.push({ k, a: 'hid', text: `${who} hid` })
     if (m?.a === 'move' && p.x === was.x && p.y === was.y) out.push({ k, a: 'bounce', text: `${who} was blocked and stayed put` })
     if (was.hp > 0 && !safeAt(p.x, p.y, s.safe)) out.push({ k, a: 'burn', text: `${who} burned in the storm` })
     if (!p.alive) {
@@ -417,7 +425,7 @@ function drawTributes(s, caught, gone = new Set()) {
 }
 
 const wait = ms => new Promise(ok => setTimeout(ok, ms / speed))
-const ORDER = ['hid', 'bounce', 'loot', 'miss', 'block', 'hit', 'burn', 'died']
+const ORDER = ['fooled', 'resisted', 'hid', 'bounce', 'loot', 'miss', 'block', 'hit', 'burn', 'died']
 
 function say(big, small = '') {
   const c = $('caption')
@@ -471,7 +479,9 @@ async function playRound(i) {
 
   for (const e of list) {
     const p = view.players[e.k], t = e.t && view.players[e.t], u = units.get(e.k)
-    say(e.text); logLine(e)
+    say(e.text, e.a === 'fooled' ? 'A bad decision, but still a legal move. Injection cannot break the rules.' : e.a === 'resisted' ? 'It kept playing its own game.' : ''); logLine(e)
+    if (e.a === 'fooled') { u.classList.add('dazed'); floatAt('float fooled', 'Fooled!', p.x, p.y) }
+    if (e.a === 'resisted') floatAt('float word', 'Ignored', p.x, p.y)
     if (e.a === 'miss' || e.a === 'block') {
       await strike(e, view, p.item === 'knife'); if (!live()) return
       floatAt('float word', e.a === 'miss' ? 'Miss' : 'Blocked', e.x, e.y)
@@ -495,7 +505,7 @@ async function playRound(i) {
     if (e.a === 'burn') { p.hp--; drawUnits(view, caught); u.classList.add('burn'); floatAt('float burn', '-1', p.x, p.y) }
     if (e.a === 'died') { p.alive = false; drawUnits(view, caught); u.classList.remove('dead'); u.classList.add('fall') }
     drawTributes(view, caught)
-    await wait(e.a === 'hid' || e.a === 'bounce' ? 900 : 1500); if (!live()) return
+    await wait(e.a === 'hid' || e.a === 'bounce' ? 900 : e.a === 'fooled' ? 2400 : 1500); if (!live()) return
   }
 
   for (const m of (game.chat ?? []).filter(c => c.round === round.round && showChat).slice(0, 3)) {

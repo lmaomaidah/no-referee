@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { runArena } from './arena.ts'
-import { scripted, quitter } from './bots.ts'
+import { gullible, injector, scripted, quitter } from './bots.ts'
 import type { Strategy } from './bots.ts'
 import { verify } from './verify.ts'
 
@@ -83,4 +83,10 @@ test('a dead player gets last words once, and the demo transcript records them',
     { ...red, rounds: 4, attacks: { 3: { kind: 'illegal', round: 2 } } })
   assert.equal(chat.length, 3)
   assert.ok(chat.every(m => m.from === keys[3] && m.text === 'curse you all'))
+})
+
+test('an injected order reaches a gullible player next round and changes its move, within the rules', async () => {
+  const { result, keys } = await runArena([gullible, injector, scripted, scripted], { ...red, rounds: 3 })
+  assert.equal(result.rounds[2].moves[keys[0]]?.a, 'hide')
+  assert.deepEqual(result.cheats, [], 'being fooled is a bad decision, not a broken rule')
 })

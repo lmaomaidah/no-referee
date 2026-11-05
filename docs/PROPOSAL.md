@@ -82,7 +82,9 @@ The project extends topic 13 (commit-reveal) into a multi-party game and uses to
 2. **Prompt injection:** a fake "system" message orders a model to make a bad move or an
    illegal one. We measure how often each model obeys, with no defence, with chat labelled
    untrusted, and with a strict message format. Built, not run yet. It uses single-turn
-   trials rather than whole games, because free accounts get 50 requests a day.
+   trials rather than whole games, because free accounts get 50 requests a day. In the viewer,
+   an Injector bot shows attacks in play and a scripted Gullible bot shows what being fooled
+   looks like. That bot is an illustration, not a result.
 3. **Key claim:** injection can push an agent into a bad decision, but never a
    rule-breaking move, because models only pick from a menu of legal moves and the
    protocol rejects anything not validly committed and signed.

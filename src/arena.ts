@@ -7,7 +7,7 @@ import type { Fault } from './relay.ts'
 import { runPlayer } from './player.ts'
 import type { Attack } from './player.ts'
 import { verify } from './verify.ts'
-import { injector, scripted } from './bots.ts'
+import { gullible, injector, scripted } from './bots.ts'
 import { CHAT_URL, llm } from './llm.ts'
 import { MODELS } from './models.ts'
 import type { Strategy } from './bots.ts'
@@ -51,8 +51,8 @@ if (import.meta.main) {
   const stats = MODELS.map(() => ({ calls: 0, fallbacks: 0, told: 0, why: {} }))
   if (ai) process.loadEnvFile()
   const key = process.env.OPENROUTER_API_KEY ?? ''
-  const players = ai ? [...MODELS.map((m, i) => llm(m, key, stats[i], CHAT_URL, demo ? 15_000 : 60_000)), injector] : [scripted, scripted, injector, scripted]
-  const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Injector bot'] : players.map((_, i) => i === 2 ? 'Injector bot' : cheat && i === 3 ? 'Cheater bot' : `Bot ${i + 1}`)
+  const players = ai ? [...MODELS.map((m, i) => llm(m, key, stats[i], CHAT_URL, demo ? 15_000 : 60_000)), injector] : [scripted, gullible, injector, scripted]
+  const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Injector bot'] : players.map((_, i) => ['Bot 1', 'Gullible bot', 'Injector bot', cheat ? 'Cheater bot' : 'Bot 4'][i])
 
   const { log, config, keys, chat, result } = await runArena(players, {
     rounds, timeoutMs: ai ? 90_000 : cheat ? 5000 : 30_000, settleMs: 300,
