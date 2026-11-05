@@ -61,13 +61,13 @@
   .unit.dead { filter: none; opacity: 1; }
   .unit.dead svg.body, .unit.dead .tag { display: none; }
   .unit.dead svg.grave { display: block; }
-  .unit.fall svg.grave { display: block; animation: appear .3s 1.9s both; }
-  .unit.fall svg.body { animation: fall .6s 1.4s both; }
-  .unit.fall .pips { animation: appear .2s 1.4s reverse both; }
-  .unit.lunge svg.body { animation: lunge .5s .6s ease-in-out; }
-  .unit.hit svg.body { animation: hit .5s .85s; }
-  .unit.grab svg.body { animation: grab .5s .6s; }
-  .unit.burn svg.body { animation: burn .6s 1.2s; }
+  .unit.fall svg.grave { display: block; animation: appear .3s .6s both; }
+  .unit.fall svg.body { animation: fall .6s both; }
+  .unit.fall .pips { display: none; }
+  .unit.lunge svg.body { animation: lunge .5s ease-in-out; }
+  .unit.hit svg.body { animation: hit .5s; }
+  .unit.grab svg.body { animation: grab .5s; }
+  .unit.burn svg.body { animation: burn .6s; }
   @keyframes lunge { 45% { transform: translate(calc(var(--dx) * 62%), calc(var(--dy) * 62%)) scale(1.18); } }
   @keyframes hit { 0%, 100% { transform: none; } 15% { transform: translateX(-9%) rotate(-9deg); filter: brightness(3); } 45% { transform: translateX(9%) rotate(9deg); filter: brightness(2); } 75% { transform: translateX(-4%); } }
   @keyframes grab { 50% { transform: translateY(-16%) scale(1.14); } }
@@ -75,13 +75,13 @@
   @keyframes fall { to { transform: rotate(82deg) translate(6%, 30%); opacity: 0; } }
   @keyframes appear { from { opacity: 0; transform: translateY(20%); } to { opacity: 1; transform: none; } }
 
-  .slash { position: absolute; width: 11%; aspect-ratio: 1; display: grid; place-items: center; animation: pop .45s ease-out .85s both; }
+  .slash { position: absolute; width: 11%; aspect-ratio: 1; display: grid; place-items: center; animation: pop .45s ease-out both; }
   .slash::before { content: ""; width: 90%; height: 16%; background: #fff; transform: rotate(-38deg); box-shadow: 0 0 10px var(--mustard); clip-path: polygon(0 50%, 100% 0, 100% 100%); }
-  .float { position: absolute; z-index: 40; width: 16%; text-align: center; font: 400 clamp(20px, 3.4vw, 32px)/1 var(--poster); color: #fff; -webkit-text-stroke: 1px var(--soot); animation: rise 1.2s ease-out .9s both; }
+  .float { position: absolute; z-index: 40; width: 16%; text-align: center; font: 400 clamp(20px, 3.4vw, 32px)/1 var(--poster); color: #fff; -webkit-text-stroke: 1px var(--soot); animation: rise 1.3s ease-out both; }
   .float.heal { color: #7be08a; }
   .float.word { font-size: clamp(14px, 2.2vw, 21px); color: var(--bone); }
-  .float.loot { font-size: clamp(14px, 2.2vw, 21px); color: var(--mustard); animation-delay: .6s; }
-  .float.burn { color: #ffb02e; animation-delay: 1.25s; }
+  .float.loot { font-size: clamp(14px, 2.2vw, 21px); color: var(--mustard); }
+  .float.burn { color: #ffb02e; }
   @keyframes pop { from { transform: translate(-50%, -70%) scale(.4); opacity: 1; } to { transform: translate(-50%, -70%) scale(1.5); opacity: 0; } }
   @keyframes rise { from { transform: translate(-50%, -120%); opacity: 1; } to { transform: translate(-50%, calc(-120% - 46px)); opacity: 0; } }
 
@@ -92,6 +92,13 @@
   .stamp b { display: block; font: 400 clamp(50px, 10vw, 92px)/1 var(--poster); letter-spacing: .03em; }
   .stamp.soft { background: #2a1f1aee; }
   @keyframes stamp { 0% { transform: translate(-50%, -50%) rotate(-5deg) scale(2.2); opacity: 0; } 9%, 86% { transform: translate(-50%, -50%) rotate(-5deg) scale(1); opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(-5deg) scale(1); } }
+  #caption { position: absolute; z-index: 46; left: 0; right: 0; bottom: 0; padding: 8px 14px 10px; text-align: center; background: #1a1310e6; color: var(--bone); font: 400 clamp(24px, 3.8vw, 40px)/1.05 var(--poster); letter-spacing: .02em; }
+  #caption small { display: block; font: 700 15px/1.3 "Trebuchet MS", Verdana, sans-serif; color: var(--mustard); }
+  #caption small:empty { display: none; }
+  .weapon { position: absolute; width: 8%; transform: translate(-50%, -100%) scale(var(--s)); transition: left .38s ease-in, top .38s ease-in; }
+  .weapon svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 2px #0008); }
+  .bubble.inject { background: #fff2a8; border-color: #b3121d; color: #7a0c14; }
+  .line.inject { color: #ffd76a; }
   #banner { position: absolute; z-index: 45; left: 0; right: 0; bottom: 8%; padding: 8px 12px 10px; text-align: center; background: #1a1310ee; color: var(--mustard); font: 400 clamp(26px, 5vw, 46px)/1.05 var(--poster); }
   #banner small { display: block; font: 700 15px/1.3 "Trebuchet MS", Verdana, sans-serif; color: var(--bone); }
 
@@ -158,12 +165,14 @@
       <div id="units"></div>
       <div id="fx"></div>
       <div id="banner" hidden></div>
+      <div id="caption" aria-live="polite" hidden></div>
     </div>
     <div id="timeline-wrap"><input id="timeline" type="range" min="0" value="0" aria-label="Round"></div>
     <div class="controls">
       <button id="play">Play</button>
       <button id="back">Back</button>
       <button id="step">Next round</button>
+      <button id="speed">Speed: normal</button>
       <p id="hint">Space plays or pauses. Arrow keys change the round.</p>
     </div>
   </section>
@@ -215,7 +224,7 @@ const STEP = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }
 const $ = id => document.getElementById(id)
 const short = k => k.length > 12 ? `${k.slice(0, 4)}…${k.slice(-4)}` : k
 const params = new URLSearchParams(location.search)
-let game, keys, at = 0, timer = null, showChat = true
+let game, keys, at = 0, playing = false, showChat = true, run = 0, speed = 1
 const units = new Map()
 
 const letter = k => String.fromCharCode(65 + keys.indexOf(k))
@@ -237,6 +246,8 @@ function spot(e, x, y) {
 }
 
 const SPRITES = {
+  fist: `<svg viewBox="0 0 48 48"><path fill="#e8b98a" stroke="#1a1310" stroke-width="3" d="M9 20c0-5 3-8 7-8h14c7 0 11 4 11 10v8c0 7-5 12-12 12H18c-6 0-9-4-9-10z"/><path stroke="#1a1310" stroke-width="3" d="M19 12v12M27 12v12M35 14v10M10 25h18"/></svg>`,
+  blade: `<svg viewBox="0 0 48 48"><path fill="#eef3f6" stroke="#1a1310" stroke-width="2.5" d="M42 3 16 29l5 5L46 8z"/><path fill="#7a4a1f" stroke="#1a1310" stroke-width="2.5" d="M12 27l10 10-4 3-3-3-6 7-4-4 7-6-3-3z"/></svg>`,
   knife: `<svg viewBox="0 0 60 56"><path fill="#8a5a2b" stroke="#3a220f" stroke-width="2" d="M6 24h48v28H6z"/><path stroke="#3a220f" stroke-width="2" d="M6 33h48M6 43h48M18 24v28M42 24v28"/><path fill="#dfe6ea" stroke="#333" stroke-width="1.5" d="M44 2 22 26l5 4L48 7z"/><path fill="#5c3a1c" d="M18 27l6 6-4 3-6-6z"/></svg>`,
   shield: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="54" rx="20" ry="5" fill="#0004"/><path fill="#2f6fb0" stroke="#17324f" stroke-width="3" d="M30 3l22 7v18c0 13-9 22-22 28C17 50 8 41 8 28V10z"/><path fill="#e0a63a" d="M30 12l12 4v12c0 8-5 13-12 17z"/></svg>`,
   medkit: `<svg viewBox="0 0 60 52"><path fill="none" stroke="#444" stroke-width="4" d="M22 12V6h16v6"/><rect x="5" y="12" width="50" height="36" rx="5" fill="#f4f1ea" stroke="#555" stroke-width="2"/><path fill="#c52f2c" d="M25 18h10v8h8v10h-8v8H25v-8h-8V26h8z"/></svg>`,
@@ -395,51 +406,125 @@ function events(round, prev, s) {
   return out
 }
 
-function effects(round, prev, s, list) {
-  const fx = $('fx')
-  fx.replaceChildren()
-  const place = (e, x, y) => { spot(e, x, y); e.style.zIndex = 40; fx.append(e) }
-  void fx.offsetWidth  // restart animations when the same class comes back
-  for (const e of list) {
-    const u = units.get(e.k), p = s.players[e.k]
-    if (e.a === 'hit' || e.a === 'miss' || e.a === 'block') {
-      u.style.setProperty('--dx', e.dx); u.style.setProperty('--dy', e.dy); u.classList.add('lunge')
-      place(el('div', 'slash'), e.x, e.y)
-    }
-    if (e.a === 'hit') units.get(e.t).classList.add('hit')
-    if (e.a === 'miss') place(el('div', 'float word', 'Miss'), e.x, e.y)
-    if (e.a === 'block') place(el('div', 'float word', 'Blocked'), e.x, e.y)
-    if (e.a === 'loot') { u.classList.add('grab'); place(el('div', 'float loot', e.item === 'medkit' ? '+1 HP' : `+${e.item}`), p.x, p.y) }
-    if (e.a === 'burn') { u.classList.add('burn'); place(el('div', 'float burn', '-1'), p.x, p.y) }
-    if (e.a === 'died') { u.classList.remove('dead'); u.classList.add('fall') }
-  }
-  for (const t of new Set(list.filter(e => e.a === 'hit').map(e => e.t))) {
-    const before = Math.max(prev.players[t].hp, 0), burned = list.some(e => e.a === 'burn' && e.k === t) ? 1 : 0
-    const lost = before - Math.max(s.players[t].hp, 0) - burned
-    place(el('div', 'float', lost > 0 ? `-${lost}` : 'Shield'), s.players[t].x, s.players[t].y)
-  }
-  if (showChat) {
-    const said = new Set()
-    for (const m of (game.chat ?? []).filter(c => c.round === round.round)) {
-      if (said.has(m.from) || said.size > 2) continue
-      const delay = said.size * 1.6
-      said.add(m.from)
-      const p = s.players[m.from], b = el('div', 'bubble', m.text.length > 70 ? `${m.text.slice(0, 68)}…` : m.text)
-      const at2 = project(p.x + .5, p.y + .5)
-      b.style[p.x > 3 ? 'right' : 'left'] = `${p.x > 3 ? 100 - at2.x / 10 + 3 : at2.x / 10 + 3}%`
-      b.style.bottom = `${100 - at2.y / 8.6 + 5}%`
-      b.style.animationDelay = `${delay}s`  // one at a time, so neighbours don't overlap
-      fx.append(b)
-    }
-  }
-  for (const c of (game.cheats ?? []).filter(c => c.round === round.round).slice(0, 1)) {
-    const soft = c.type === 'absent', st = el('div', soft ? 'stamp soft' : 'stamp')
-    st.append(el('b', '', soft ? 'Removed' : 'Caught'), el('div', '', `${nameOf(c.pubkey)}: ${SAY[c.type] ?? c.type}`))
-    fx.append(st)
-  }
+function drawTributes(s, caught, gone = new Set()) {
+  $('tributes').replaceChildren(...keys.map(k => {
+    const p = s.players[k], row = el('div', p.alive ? 'tribute' : 'tribute out'), dot = el('span', 'dot', letter(k))
+    dot.style.background = color(k)
+    const status = caught.has(k) ? 'Caught cheating' : gone.has(k) ? 'Removed' : p.alive ? `HP ${Math.max(p.hp, 0)}${p.item ? `, ${p.item}` : ''}${p.hiding ? ', hiding' : ''}` : 'Dead'
+    row.append(dot, el('span', 'name', nameOf(k)), el('span', caught.has(k) ? 'state caught' : 'state', status))
+    return row
+  }))
 }
 
-function draw(animate) {
+const wait = ms => new Promise(ok => setTimeout(ok, ms / speed))
+const ORDER = ['hid', 'bounce', 'loot', 'miss', 'block', 'hit', 'burn', 'died']
+
+function say(big, small = '') {
+  const c = $('caption')
+  c.hidden = false
+  c.replaceChildren(document.createTextNode(big), el('small', '', small))
+}
+function logLine(e) { $('log').append(el('div', `act ${e.a}`, e.text)); $('log').scrollTop = $('log').scrollHeight }
+function floatAt(cls, text, x, y) { const f = el('div', cls, text); spot(f, x, y); f.style.zIndex = 40; $('fx').append(f) }
+
+/** A fist or blade flies from the attacker to the cell it is aimed at. */
+async function strike(e, view, knife) {
+  const u = units.get(e.k), from = view.players[e.k]
+  u.style.setProperty('--dx', e.dx); u.style.setProperty('--dy', e.dy)
+  u.classList.remove('lunge'); void u.offsetWidth; u.classList.add('lunge')
+  const w = el('div', 'weapon'); w.innerHTML = knife ? SPRITES.blade : SPRITES.fist
+  spot(w, from.x, from.y); w.style.zIndex = 42; $('fx').append(w)
+  void w.offsetWidth
+  spot(w, e.x, e.y); w.style.zIndex = 42
+  await wait(420)
+  w.remove()
+  const hit = el('div', 'slash'); spot(hit, e.x, e.y); hit.style.zIndex = 41; $('fx').append(hit)
+}
+
+/** Plays one round as a sequence the audience can follow. Stops if `run` moves on. */
+async function playRound(i) {
+  const token = ++run, live = () => token === run
+  at = Math.max(0, Math.min(game.rounds.length - 1, i))
+  const round = game.rounds[at], prev = game.rounds[Math.max(at - 1, 0)].state, s = round.state
+  const list = events(round, prev, s).sort((a, b) => ORDER.indexOf(a.a) - ORDER.indexOf(b.a))
+  const caught = new Set((game.cheats ?? []).filter(c => c.round < round.round && c.type !== 'absent').map(c => c.pubkey))
+
+  // Start from how things stood before this round, and change them one action at a time.
+  const view = structuredClone(s)
+  view.drops = structuredClone(prev.drops)
+  for (const k of keys) Object.assign(view.players[k], { x: prev.players[k].x, y: prev.players[k].y, hp: prev.players[k].hp, item: prev.players[k].item, alive: prev.players[k].alive, hiding: false })
+  $('fx').replaceChildren(); $('log').replaceChildren()
+  $('banner').hidden = true
+  drawBoard(view); drawUnits(view, caught); drawTributes(view, caught)
+  $('timeline').value = at
+  $('cheats').replaceChildren(...(caught.size ? [] : [el('p', 'quiet', 'None yet.')]))
+  $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round}/${game.rounds.at(-1).round}`
+
+  if (round.round === 0) { say('The tributes take their places'); await wait(1500); if (live()) draw(false); return }
+  say(`Round ${round.round}`, round.round % 5 === 0 ? 'The fire closes in' : ''); await wait(1000); if (!live()) return
+  say('Everyone secretly locks in a move', 'Each move is a signed hash. Nobody can see it or change it.'); await wait(1500); if (!live()) return
+
+  for (const k of keys) { view.players[k].x = s.players[k].x; view.players[k].y = s.players[k].y; view.players[k].hiding = s.players[k].hiding }
+  say('Moves revealed', 'All moves happen at the same time, so nobody can react.')
+  drawBoard({ ...view, safe: s.safe }); drawUnits(view, caught)
+  await wait(1500); if (!live()) return
+
+  for (const e of list) {
+    const p = view.players[e.k], t = e.t && view.players[e.t], u = units.get(e.k)
+    say(e.text); logLine(e)
+    if (e.a === 'miss' || e.a === 'block') {
+      await strike(e, view, p.item === 'knife'); if (!live()) return
+      floatAt('float word', e.a === 'miss' ? 'Miss' : 'Blocked', e.x, e.y)
+    }
+    if (e.a === 'hit') {
+      await strike(e, view, p.item === 'knife'); if (!live()) return
+      let dmg = p.item === 'knife' ? 2 : 1
+      if (t.item === 'shield') { dmg--; t.item = null; floatAt('float word', 'Shield broke', e.x, e.y) }
+      t.hp -= dmg
+      drawUnits(view, caught)
+      const v = units.get(e.t); v.classList.remove('hit'); void v.offsetWidth; v.classList.add('hit')
+      if (dmg) floatAt('float', `-${dmg}`, e.x, e.y)
+    }
+    if (e.a === 'loot') {
+      view.drops = view.drops.filter(d => d.x !== p.x || d.y !== p.y)
+      if (e.item === 'medkit') p.hp = Math.min(3, p.hp + 1); else p.item = e.item
+      drawBoard(view); drawUnits(view, caught)
+      u.classList.add('grab')
+      floatAt('float loot', e.item === 'medkit' ? '+1 HP' : `+${e.item}`, p.x, p.y)
+    }
+    if (e.a === 'burn') { p.hp--; drawUnits(view, caught); u.classList.add('burn'); floatAt('float burn', '-1', p.x, p.y) }
+    if (e.a === 'died') { p.alive = false; drawUnits(view, caught); u.classList.remove('dead'); u.classList.add('fall') }
+    drawTributes(view, caught)
+    await wait(e.a === 'hid' || e.a === 'bounce' ? 900 : 1500); if (!live()) return
+  }
+
+  for (const m of (game.chat ?? []).filter(c => c.round === round.round && showChat).slice(0, 3)) {
+    const injected = /^system\b/i.test(m.text)
+    const from = view.players[m.from], spotAt = project(from.x + .5, from.y + .5)
+    const b = el('div', injected ? 'bubble inject' : 'bubble', m.text.length > 90 ? `${m.text.slice(0, 88)}…` : m.text)
+    b.style[from.x > 3 ? 'right' : 'left'] = `${from.x > 3 ? 100 - spotAt.x / 10 + 3 : spotAt.x / 10 + 3}%`
+    b.style.bottom = `${100 - spotAt.y / 8.6 + 5}%`
+    say(injected ? 'Prompt injection attempt' : `${nameOf(m.from)} talks trash`, injected ? `${nameOf(m.from)} sends ${nameOf(m.to)} a fake system order.` : '')
+    $('fx').append(b)
+    const line = el('div', injected ? 'line inject' : 'line')
+    line.append(el('b', '', `${nameOf(m.from)} to ${nameOf(m.to)}: `), document.createTextNode(m.text))
+    $('chat').append(line); $('chat').scrollTop = $('chat').scrollHeight
+    await wait(2300); if (!live()) return
+    b.remove()
+  }
+
+  for (const c of (game.cheats ?? []).filter(c => c.round === round.round)) {
+    const soft = c.type === 'absent', st = el('div', soft ? 'stamp soft' : 'stamp')
+    st.append(el('b', '', soft ? 'Removed' : 'Caught'), el('div', '', `${nameOf(c.pubkey)}: ${SAY[c.type] ?? c.type}`))
+    $('caption').hidden = true
+    $('fx').append(st)
+    await wait(3000); if (!live()) return
+  }
+  draw(false)
+}
+
+function draw() {
+  $('caption').hidden = true
   const round = game.rounds[at], s = round.state, prev = game.rounds[Math.max(at - 1, 0)].state
   const seen = (game.cheats ?? []).filter(c => c.round <= round.round)
   const caught = new Set(seen.filter(c => c.type !== 'absent').map(c => c.pubkey))
@@ -448,17 +533,11 @@ function draw(animate) {
   drawBoard(s)
   drawUnits(s, caught)
   const list = events(round, prev, s)
-  if (animate) effects(round, prev, s, list); else $('fx').replaceChildren()
+  $('fx').replaceChildren()
   $('log').replaceChildren(...(list.length ? list.map(e => el('div', `act ${e.a}`, e.text))
     : [el('p', 'quiet', round.round === 0 ? 'The tributes take their places.' : 'Everyone moved.')]))
 
-  $('tributes').replaceChildren(...keys.map(k => {
-    const p = s.players[k], row = el('div', p.alive ? 'tribute' : 'tribute out'), dot = el('span', 'dot', letter(k))
-    dot.style.background = color(k)
-    const status = caught.has(k) ? 'Caught cheating' : gone.has(k) ? 'Removed' : p.alive ? `HP ${Math.max(p.hp, 0)}${p.item ? `, ${p.item}` : ''}${p.hiding ? ', hiding' : ''}` : 'Dead'
-    row.append(dot, el('span', 'name', nameOf(k)), el('span', caught.has(k) ? 'state caught' : 'state', status))
-    return row
-  }))
+  drawTributes(s, caught, gone)
 
   $('cheats').replaceChildren(...(seen.length ? seen.map(c => {
     const box = el('div', c.type === 'absent' ? 'cheat soft' : 'cheat')
@@ -470,7 +549,7 @@ function draw(animate) {
   const chat = (game.chat ?? []).filter(m => m.round <= round.round).slice(-10)
   $('chat').hidden = !showChat
   $('chat').replaceChildren(...(chat.length ? chat.map(m => {
-    const line = el('div', 'line')
+    const line = el('div', /^system\b/i.test(m.text) ? 'line inject' : 'line')
     line.append(el('b', '', `${nameOf(m.from)} to ${nameOf(m.to)}: `), document.createTextNode(m.text))
     return line
   }) : [el('p', 'quiet', 'Nobody has said anything yet.')]))
@@ -487,14 +566,22 @@ function draw(animate) {
   $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round}/${game.rounds.at(-1).round}`
 }
 
-function go(i, animate = false) { at = Math.max(0, Math.min(game.rounds.length - 1, i)); draw(animate) }
-function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Play' }
+function go(i) { run++; at = Math.max(0, Math.min(game.rounds.length - 1, i)); draw() }
+function stop() { playing = false; $('play').textContent = 'Play' }
 function toggle() {
-  if (timer) return stop()
+  if (playing) { stop(); go(at); return }
   if (at === game.rounds.length - 1) go(0)
+  playing = true
   $('play').textContent = 'Pause'
-  go(at + 1, true)
-  timer = setInterval(() => at === game.rounds.length - 1 ? stop() : go(at + 1, true), 3400)
+  ;(async () => {
+    while (playing && at < game.rounds.length - 1) {
+      const token = run + 1
+      await playRound(at + 1)
+      if (token !== run) return
+      await wait(700)
+    }
+    stop()
+  })()
 }
 
 function start(data) {
@@ -513,18 +600,19 @@ function start(data) {
   }
   const bad = game.rejected ?? 0
   $('rejected').textContent = `${bad} invalid ${bad === 1 ? 'event' : 'events'} thrown away.`
-  go(Number(params.get('round') ?? 0), params.has('round'))
+  if (params.has('round')) playRound(Number(params.get('round'))); else go(0)
 }
 
 $('play').onclick = toggle
 $('back').onclick = () => { stop(); go(at - 1) }
-$('step').onclick = () => { stop(); go(at + 1, true) }
+$('step').onclick = () => { stop(); playRound(at + 1) }
+$('speed').onclick = e => { speed = speed === 1 ? 2.5 : 1; e.target.textContent = speed === 1 ? 'Speed: normal' : 'Speed: fast' }
 $('timeline').oninput = e => { stop(); go(Number(e.target.value)) }
-$('chat-toggle').onclick = e => { showChat = !showChat; e.target.textContent = showChat ? 'Hide chat' : 'Show chat'; draw(false) }
+$('chat-toggle').onclick = e => { showChat = !showChat; e.target.textContent = showChat ? 'Hide chat' : 'Show chat'; go(at) }
 addEventListener('keydown', e => {
   if (!game || e.target.tagName === 'BUTTON' && e.key === ' ') return
   if (e.key === ' ') { e.preventDefault(); toggle() }
-  if (e.key === 'ArrowRight' && e.target.id !== 'timeline') { stop(); go(at + 1, true) }
+  if (e.key === 'ArrowRight' && e.target.id !== 'timeline') { stop(); playRound(at + 1) }
   if (e.key === 'ArrowLeft' && e.target.id !== 'timeline') { stop(); go(at - 1) }
 })
 

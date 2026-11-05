@@ -98,8 +98,8 @@ rule-breaking move. `src/llm.test.ts` already covers the menu side of that.
 
 ### Report
 
-Use the attack list below as the results table. Include every limit in the
-[updated proposal](PROPOSAL.md), and report how many AI turns were real model moves.
+A draft is in [REPORT.md](REPORT.md), and everyone can edit it on GitHub. Fill the TODO
+sections once the model results are in.
 
 ## Attacks already covered
 

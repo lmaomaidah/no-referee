@@ -6,7 +6,8 @@ file, and your page draws it.
 
 **A styled working version already exists at `viewer/index.html`.** It meets every
 requirement below, so your job is to polish it. It's one file with no dependencies
-and no build step. Add `?round=2` to the address to jump to a round with its effects.
+and no build step. Add `?round=2` to the address to play one round. Playback runs one action at a time in
+`playRound`, with a caption for each, so keep that pacing if you change the effects.
 The look is a worn crimson poster around a painted crater arena, with an original burning-whistle emblem, so keep any
 new art original rather than borrowing from existing games or films.
 
@@ -21,8 +22,8 @@ npx serve viewer
 ```
 
 Open the address `npx serve` prints. The page loads `replay.json`, or
-`sample-replay.json` if no game has been run. Add `?game=sample-replay.json` to the
-address to force the sample, which is hand-written fake data in the exact real format.
+`sample-replay.json` if no game has been run. The sample is a real recorded bot game. Add `?game=sample-replay.json` to the
+address to force the sample.
 Use any stack you like, as long as `viewer/` can be opened with a static file server.
 
 For a real game, run `npm install`, then `node src/arena.ts`. It takes under a minute and writes

@@ -34,7 +34,8 @@ Last updated Nov 5, 2026.
 - [x] Player loop and arena (`src/player.ts`, `src/arena.ts`)
 - [x] Live attacks: equivocation, changed move, illegal move, state lie, withheld reveal, forgery, quitting, dropping relay
 - [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
-- [x] Styled replay viewer (`viewer/index.html`): painted arena, animated fights and supply runs, fire storm, speech bubbles, battle log, CAUGHT stamp
+- [x] Replay viewer (`viewer/index.html`): painted arena, one action at a time with captions, visible injection attempts, CAUGHT stamp
+- [x] Report draft ([docs/REPORT.md](docs/REPORT.md)), TODO sections need model results
 - [x] Demo mode with a hard time limit per model (`--demo`), timing not yet measured on real models
 - [x] Encrypted agent chat, trash talk and last words (tests pass, not yet seen with real models because the daily limit ran out)
 
@@ -45,7 +46,7 @@ Last updated Nov 5, 2026.
 | Polish the replay viewer | Teammates | Styled version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
 | Prompt-injection experiment | Open | Built (`src/injection.ts`), not yet run. Results go in `results/injection.jsonl`, commit them |
 | Reliable model access | Open | See known problems |
-| Report | Open | Must state the limits in [docs/PROPOSAL.md](docs/PROPOSAL.md) |
+| Finish the report | Open | Fill the TODO sections in [docs/REPORT.md](docs/REPORT.md) |
 | Live demo | Everyone | Rehearse with a saved game as backup |
 | Ask the instructor: topic 13 or custom? | Open | Still unanswered in the proposal |
 
