@@ -3,24 +3,30 @@ import { generateSecretKey, getPublicKey } from 'nostr-tools/pure'
 import { randomNonce } from './crypto.ts'
 import type { Config } from './protocol.ts'
 import { startRelay } from './relay.ts'
+import type { Fault } from './relay.ts'
 import { runPlayer } from './player.ts'
+import type { Attack } from './player.ts'
 import { verify } from './verify.ts'
 import { scripted } from './bots.ts'
 import type { Strategy } from './bots.ts'
 
-type Options = { rounds?: number, timeoutMs?: number, settleMs?: number }
+type Options = {
+  rounds?: number, timeoutMs?: number, settleMs?: number,
+  attacks?: Record<number, Attack>,   // by index into strategies
+  fault?: Fault,                      // applied to the first relay only
+}
 
 /** Runs one game on two local relays. The result comes from the log, not from any player. */
-export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs = 30_000, settleMs = 200 }: Options = {}) {
+export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs = 30_000, settleMs = 200, attacks = {}, fault }: Options = {}) {
   const sks = strategies.map(() => generateSecretKey())
   const keys = sks.map(sk => getPublicKey(sk))
   const n = keys.length
   const config: Config = { roster: [...keys].sort(), k: Math.floor(n / 2) + 1, rounds, salt: randomNonce() }
-  const relays = [await startRelay({ port: 0 }), await startRelay({ port: 0 })]
+  const relays = [await startRelay({ port: 0, fault }), await startRelay({ port: 0 })]
   try {
     const urls = relays.map(r => r.url)
     const done = await Promise.all(sks.map((sk, i) =>
-      runPlayer({ config, sk, relays: urls, strategy: strategies[i], timeoutMs, settleMs })))
+      runPlayer({ config, sk, relays: urls, strategy: strategies[i], timeoutMs, settleMs, attack: attacks[i] })))
     const log = [...new Map(done.flatMap(d => d.events).map(e => [e.id, e])).values()]
     return { log, config, keys, result: verify(log, config) }
   } finally {

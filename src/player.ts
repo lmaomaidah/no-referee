@@ -8,10 +8,14 @@ import { replay } from './verify.ts'
 import type { Result } from './verify.ts'
 import type { Strategy } from './bots.ts'
 
+/** Red team: this player cheats in one round. Honest players never set it. */
+export type Attack = { kind: 'equivocate' | 'change-move' | 'illegal' | 'lie-state' | 'withhold' | 'forge', round: number }
+
 export type PlayerOptions = {
   config: Config, sk: Uint8Array, relays: string[], strategy: Strategy,
   timeoutMs: number,   // local patience before voting someone absent; never part of the rules
   settleMs: number,    // wait after a round resolves so late copies arrive
+  attack?: Attack,
 }
 
 /**
@@ -53,6 +57,7 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
 
   async function act(result: Result) {
     const p = result.pending!, r = p.round
+    const attack = o.attack?.round === r ? o.attack.kind : null
     if (!setupSent) {
       setupSent = true
       return publish(buildSetup(config, sk, chain.at(-1)!, split(s0, config.roster.length, config.k)))
@@ -67,16 +72,29 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
       const move = p.state === null ? { a: 'hide' as const } : await strategy(p.state, me)
       deciding = false
       if (move === null) { silent = true; return }
+      const played: Move = attack === 'illegal' ? { a: 'pickup' } : move
       const nonce = randomNonce()
-      mine.set(r, { move, nonce, revealed: false })
-      const state = p.state === null ? id : stateHash(p.state)
-      return publish(buildCommit(config, sk, r, commitment(id, r, me, move, nonce), state))
+      mine.set(r, { move: played, nonce, revealed: false })
+      const state = attack === 'lie-state' ? 'ee'.repeat(32) : p.state === null ? id : stateHash(p.state)
+      const commit = buildCommit(config, sk, r, commitment(id, r, me, played, nonce), state)
+      if (attack === 'equivocate') {
+        send(sockets[0], ['EVENT', commit])
+        send(sockets[1], ['EVENT', buildCommit(config, sk, r, commitment(id, r, me, { a: 'hide' }, randomNonce()), state)])
+        return
+      }
+      if (attack === 'forge') {
+        const victim = config.roster.find(k => k !== me)
+        sockets.forEach(ws => send(ws, ['EVENT', { ...commit, pubkey: victim }]))
+      }
+      return publish(commit)
     }
 
     const plan = mine.get(r)
     if (plan && !plan.revealed && !p.noCommit.length) {
       plan.revealed = true
-      return publish(buildReveal(config, sk, r, plan.move, plan.nonce, seedForRound(chain, r)))
+      if (attack === 'withhold') { silent = true; return }
+      const changed: Move = plan.move.a === 'hide' ? { a: 'pickup' } : { a: 'hide' }
+      return publish(buildReveal(config, sk, r, attack === 'change-move' ? changed : plan.move, plan.nonce, seedForRound(chain, r)))
     }
 
     const blocking = p.noCommit.length ? p.noCommit : p.noSeed
