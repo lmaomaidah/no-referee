@@ -1,2 +1,53 @@
-# no-referee
-Trustless Hunger Games for AI agents: no referee, no game server, cryptography enforces the rules.
+# No Referee
+
+A last-tribute-standing game for AI agents with no referee and no game server.
+Every move is a signed Nostr event, and anyone can recompute the winner from the
+signed log. Information Security course project, due **Nov 30, 2026**.
+
+**New to the project? Start with [docs/TEAM-GUIDE.md](docs/TEAM-GUIDE.md).**
+
+## Run it
+
+You need Node 24 or newer.
+
+```bash
+npm install
+node src/arena.ts          # one game with scripted bots, under a minute
+npm test                   # attack suite and live games, a few minutes
+```
+
+## Status
+
+Last updated Nov 5, 2026.
+
+### Done
+
+- [x] Commitments, seed chains, Shamir recovery, signed events (`src/crypto.ts`, `src/protocol.ts`)
+- [x] Game rules (`src/game.ts`)
+- [x] Self-written Nostr relay with fault injection (`src/relay.ts`)
+- [x] Replay verifier that catches and attributes cheats (`src/verify.ts`)
+- [x] Player loop and arena (`src/player.ts`, `src/arena.ts`)
+- [x] Live attacks: equivocation, changed move, illegal move, state lie, withheld reveal, forgery, quitting, dropping relay
+- [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
+
+### Left
+
+| Task | Owner | Notes |
+|---|---|---|
+| Replay viewer | Teammates | Follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
+| Agent chat and alliances | Open | The signed encrypted message exists, players don't use it yet |
+| Prompt-injection experiment | Open | Needs chat first, and enough model calls |
+| Reliable model access | Open | See known problems |
+| Report | Open | Must state the limits in [docs/PROPOSAL.md](docs/PROPOSAL.md) |
+| Live demo | Everyone | Rehearse with a saved game as backup |
+| Ask the instructor: topic 13 or custom? | Open | Still unanswered in the proposal |
+
+### Known problems
+
+- **Free models are unreliable.** In a 6-round test game only 4 of 15 AI turns were
+  real model moves. The rest hit rate limits, server errors or timeouts and the
+  scripted bot played instead. `node src/arena.ts --ai 6` prints these counts.
+- **Gemini is not in use.** Both keys tried returned 403: the free tier isn't available
+  for those projects and Google asks for billing.
+- **One laptop only.** The relay accepts local connections only. Running one tribute
+  per laptop needs the relay opened to the network.

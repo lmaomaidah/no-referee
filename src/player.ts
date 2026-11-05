@@ -31,6 +31,7 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
   const mine = new Map<number, { move: Move, nonce: string, revealed: boolean }>()
   const voted = new Set<string>()
   let silent = false, deciding = false, setupSent = false
+  let latest: Result | null = null   // replay only when a new event arrives
   let waitKey = '', waitSince = Date.now(), settledRound = -1, settleUntil = 0
 
   const send = (ws: WebSocket, msg: unknown[]) => { if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg)) }
@@ -43,6 +44,7 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
     const p = parse(raw, config)
     if (!p) return
     seen.set(p.event.id, p)
+    latest = null
     if (!silent) sockets.forEach(ws => send(ws, ['EVENT', p.event]))
   }
 
@@ -114,7 +116,7 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
       if (busy || open < sockets.length) return
       busy = true
       try {
-        const result = replay([...seen.values()], config)
+        const result = latest ??= replay([...seen.values()], config)
         if (result.status === 'finished') {
           clearInterval(timer)
           sockets.forEach(ws => ws.close())
@@ -127,6 +129,6 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
       } finally {
         busy = false
       }
-    }, 5)
+    }, 20)
   })
 }

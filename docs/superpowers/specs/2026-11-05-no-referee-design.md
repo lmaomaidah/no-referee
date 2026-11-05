@@ -23,8 +23,8 @@ recomputed from the signed log alone, it is a bug.
 ## Changes from the proposal
 
 - **No Ollama.** User's laptop has no GPU (i5-8265U, 16 GB). Agents call hosted
-  models: Gemini and OpenRouter, both through their OpenAI-compatible chat
-  endpoint, one `fetch` function, keys in `.env`. "Each a different model family"
+  models through OpenRouter's OpenAI-compatible chat endpoint, one `fetch` function,
+  key in `.env`. Gemini was planned too, but both keys tried return 403 without billing. "Each a different model family"
   still holds. The report must say "hosted models", not "local models".
 - **Self-written relay (call).** Docker is not installed. Relays are untrusted by
   design, so a small NIP-01 relay on `ws` is enough, and it gives us a hook to

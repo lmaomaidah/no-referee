@@ -8,6 +8,7 @@ import { runPlayer } from './player.ts'
 import type { Attack } from './player.ts'
 import { verify } from './verify.ts'
 import { scripted } from './bots.ts'
+import { llm } from './llm.ts'
 import type { Strategy } from './bots.ts'
 
 type Options = {
@@ -34,11 +35,23 @@ export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs 
   }
 }
 
+const MODELS = ['nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3.5-super-vl:free', 'recursive/flint-v1.0:free']
+
+/** `node src/arena.ts` plays bots. `node src/arena.ts --ai [rounds]` puts the MODELS in, plus one bot. */
 if (import.meta.main) {
-  const { log, config, keys, result } = await runArena([scripted, scripted, scripted, scripted])
-  const names = Object.fromEntries(keys.map((k, i) => [k, `Bot ${i + 1}`]))
+  const ai = process.argv[2] === '--ai'
+  const rounds = Number(process.argv[3] ?? 20)
+  const stats = MODELS.map(() => ({ calls: 0, fallbacks: 0, why: {} }))
+  if (ai) process.loadEnvFile()
+  const key = process.env.OPENROUTER_API_KEY ?? ''
+  const players = ai ? [...MODELS.map((m, i) => llm(m, key, stats[i])), scripted] : [scripted, scripted, scripted, scripted]
+  const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Scripted bot'] : players.map((_, i) => `Bot ${i + 1}`)
+
+  const { log, config, keys, result } = await runArena(players, { rounds, timeoutMs: ai ? 90_000 : 30_000 })
+  const names = Object.fromEntries(keys.map((k, i) => [k, labels[i]]))
   mkdirSync('out', { recursive: true })
   writeFileSync('out/log.json', JSON.stringify({ config, log }))
   writeFileSync('viewer/replay.json', JSON.stringify({ ...result, names }))
   console.log(`${result.status}: winner ${result.winner && names[result.winner]}, ${result.rounds.length} rounds, ${log.length} events, ${result.cheats.length} cheats`)
+  if (ai) MODELS.forEach((m, i) => console.log(`${m}: ${stats[i].calls} calls, ${stats[i].fallbacks} fell back to the scripted bot ${JSON.stringify(stats[i].why)}`))
 }
