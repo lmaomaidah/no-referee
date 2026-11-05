@@ -4,6 +4,10 @@ The viewer is a web page that plays back a finished game. It's plain front-end
 work and you don't need to understand the cryptography. The engine writes a JSON
 file, and your page draws it.
 
+**A plain working version already exists at `viewer/index.html`.** It meets every
+requirement below, so your job is to make it look great. Restyle it or replace it.
+It's one file with no dependencies, and no build step is needed.
+
 ## Get running
 
 You need Node 24 or newer and git.
@@ -14,10 +18,10 @@ cd no-referee
 npx serve viewer
 ```
 
-Build in `viewer/`, starting with `viewer/index.html`. Use any stack you like, as
-long as `viewer/` can be opened with a static file server. Plain HTML, CSS and JS
-is enough. Load `sample-replay.json` with `fetch()` until real games exist. It's
-hand-written fake data in the exact real format.
+Open the address `npx serve` prints. The page loads `replay.json`, or
+`sample-replay.json` if no game has been run. Add `?game=sample-replay.json` to the
+address to force the sample, which is hand-written fake data in the exact real format.
+Use any stack you like, as long as `viewer/` can be opened with a static file server.
 
 For a real game, run `npm install`, then `node src/arena.ts`. It takes under a minute and writes
 `viewer/replay.json` in the same format.
@@ -74,6 +78,8 @@ rather than changing the sample.
 
 This list is the requirement, and the look is yours. The audience should spot a
 caught cheater from across the room. Keep it usable by keyboard and on a projector.
+
+Chat text comes from AI models, so always insert it as text, never as HTML.
 
 Plain words for the cheat types:
 

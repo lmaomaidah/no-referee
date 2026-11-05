@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No Referee replay</title>
+<style>
+  :root {
+    --pine: #12372a; --moss: #2f5d48; --leaf: #dfe8d4; --mist: #f3f6ee;
+    --storm: #6b2a6e; --gold: #e8b923; --alarm: #b3122f; --ink: #16231d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--mist); color: var(--ink); font: 17px/1.45 Verdana, Geneva, sans-serif; }
+  main { display: grid; grid-template-columns: minmax(320px, 620px) minmax(300px, 1fr); gap: 28px; max-width: 1240px; margin: auto; padding: 20px; }
+  h1 { margin: 0 0 12px; color: var(--pine); font: 700 34px/1.1 "Trebuchet MS", Verdana, sans-serif; }
+  h2 { margin: 22px 0 6px; color: var(--pine); font: 700 21px/1.2 "Trebuchet MS", Verdana, sans-serif; }
+
+  #board { display: grid; grid-template: repeat(8, minmax(0, 1fr)) / repeat(8, minmax(0, 1fr)); gap: 3px; aspect-ratio: 1; padding: 6px; background: var(--pine); border-radius: 6px; }
+  .cell { position: relative; display: grid; place-items: center; background: #6f9a72; border-radius: 2px; }
+  .cell.storm { background: repeating-linear-gradient(45deg, var(--storm), var(--storm) 7px, #54205a 7px, #54205a 14px); }
+  .drop { font-size: clamp(11px, 1.7vw, 15px); font-weight: 700; color: var(--pine); background: var(--gold); padding: 1px 4px; border-radius: 3px; }
+  .token { width: 76%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: clamp(16px, 3vw, 28px); border: 3px solid #fff; }
+  .token.hiding { opacity: .55; border-style: dashed; }
+  .token.dead { background: #55605a !important; opacity: .5; }
+  .token.caught { opacity: 1; background: var(--alarm) !important; outline: 5px solid var(--alarm); outline-offset: 1px; }
+
+  .controls { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  button { font: inherit; padding: 8px 14px; border: 0; border-radius: 5px; background: var(--moss); color: #fff; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  #round-label { margin-left: auto; font-weight: 700; }
+  #timeline-wrap { position: relative; margin-top: 12px; padding-top: 16px; }
+  #timeline { width: 100%; margin: 0; accent-color: var(--moss); }
+  .mark { position: absolute; top: 0; width: 12px; height: 12px; margin-left: -6px; background: var(--alarm); border-radius: 50%; }
+  #verdict { margin: 0 0 12px; padding: 10px 14px; border-radius: 5px; background: var(--leaf); font-weight: 700; }
+  #verdict.bad { background: var(--alarm); color: #fff; }
+
+  .tribute { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 5px 0; }
+  .dot { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; }
+  .state { font-size: 15px; text-align: right; }
+  .state.caught { color: var(--alarm); font-weight: 700; }
+  .cheat { margin: 8px 0; padding: 10px 14px; border-left: 6px solid var(--alarm); background: #fbe9ec; }
+  .cheat.soft { border-left-color: #8a958f; background: var(--leaf); }
+  .cheat code { display: block; margin-top: 4px; font-size: 13px; overflow-wrap: anywhere; }
+  .line { padding: 4px 0; overflow-wrap: anywhere; }
+  .line b { color: var(--moss); }
+  .quiet { color: #4c5a53; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <section aria-label="Arena">
+    <h1>No Referee</h1>
+    <p id="verdict">Loading the game…</p>
+    <div id="board" role="img" aria-label="Game board"></div>
+    <div id="timeline-wrap">
+      <input id="timeline" type="range" min="0" value="0" aria-label="Round">
+    </div>
+    <div class="controls">
+      <button id="play">Play</button>
+      <button id="back">Back</button>
+      <button id="step">Next round</button>
+      <span id="round-label"></span>
+    </div>
+    <p class="quiet">Space plays or pauses. Left and right arrows change the round.</p>
+  </section>
+
+  <section aria-label="Details">
+    <h2>Tributes</h2>
+    <div id="tributes"></div>
+    <h2>Cheats caught so far</h2>
+    <div id="cheats"></div>
+    <p id="rejected" class="quiet"></p>
+    <h2>Chat <button id="chat-toggle">Hide chat</button></h2>
+    <div id="chat" aria-live="polite"></div>
+  </section>
+</main>
+
+<script>
+const COLORS = ['#1f5fa8', '#b3541e', '#7a3fa0', '#0e7c7b', '#a3186b', '#5c6b12']
+const SAY = {
+  'equivocation': 'Signed two different moves for the same round',
+  'bad-reveal': "Revealed a move that doesn't match what they locked in",
+  'illegal-move': "Locked in a move the rules don't allow",
+  'state-fork': 'Claimed a different game state from everyone else',
+  'absent': 'Went silent, and the other players removed them',
+}
+const $ = id => document.getElementById(id)
+const short = k => k.length > 12 ? `${k.slice(0, 4)}…${k.slice(-4)}` : k
+let game, keys, at = 0, timer = null, showChat = true
+
+const letter = k => String.fromCharCode(65 + keys.indexOf(k))
+const color = k => COLORS[keys.indexOf(k) % COLORS.length]
+const nameOf = k => game.names?.[k] ?? short(k)
+const safeAt = (x, y, w) => { const lo = (8 - w) / 2; return x >= lo && y >= lo && x <= lo + w - 1 && y <= lo + w - 1 }
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag)
+  if (cls) e.className = cls
+  if (text !== undefined) e.textContent = text  // textContent: chat is written by models, never treat it as HTML
+  return e
+}
+
+function draw() {
+  const round = game.rounds[at], s = round.state
+  const seen = (game.cheats ?? []).filter(c => c.round <= round.round)
+  const caught = new Set(seen.filter(c => c.type !== 'absent').map(c => c.pubkey))
+  const gone = new Set(seen.filter(c => c.type === 'absent').map(c => c.pubkey))
+
+  const board = $('board'); board.replaceChildren()
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const cell = el('div', safeAt(x, y, s.safe) ? 'cell' : 'cell storm')
+    const drop = s.drops.find(d => d.x === x && d.y === y)
+    if (drop) cell.append(el('span', 'drop', drop.item))
+    for (const k of keys) {
+      const p = s.players[k]
+      if (p.x !== x || p.y !== y) continue
+      const t = el('div', 'token', letter(k))
+      t.style.background = color(k)
+      if (p.hiding) t.classList.add('hiding')
+      if (!p.alive) t.classList.add('dead')
+      if (caught.has(k)) t.classList.add('caught')
+      cell.replaceChildren(t)
+      if (p.alive) break
+    }
+    board.append(cell)
+  }
+
+  $('tributes').replaceChildren(...keys.map(k => {
+    const p = s.players[k], row = el('div', 'tribute'), dot = el('span', 'dot', letter(k))
+    dot.style.background = color(k)
+    const status = caught.has(k) ? 'Caught cheating' : gone.has(k) ? 'Removed' : p.alive ? `HP ${Math.max(p.hp, 0)}${p.item ? `, ${p.item}` : ''}${p.hiding ? ', hiding' : ''}` : 'Dead'
+    row.append(dot, el('span', '', nameOf(k)), el('span', caught.has(k) ? 'state caught' : 'state', status))
+    return row
+  }))
+
+  $('cheats').replaceChildren(...(seen.length ? seen.map(c => {
+    const box = el('div', c.type === 'absent' ? 'cheat soft' : 'cheat')
+    box.append(el('strong', '', `Round ${c.round}: ${nameOf(c.pubkey)}`), el('div', '', SAY[c.type] ?? c.type),
+      el('code', '', `Proof: ${c.evidence.map(short).join(', ')}`))
+    return box
+  }) : [el('p', 'quiet', 'None yet.')]))
+
+  const chat = (game.chat ?? []).filter(m => m.round <= round.round).slice(-8)
+  $('chat').hidden = !showChat
+  $('chat').replaceChildren(...(chat.length ? chat.map(m => {
+    const line = el('div', 'line')
+    line.append(el('b', '', `${nameOf(m.from)} to ${nameOf(m.to)}: `), document.createTextNode(m.text))
+    return line
+  }) : [el('p', 'quiet', 'Nobody has said anything yet.')]))
+
+  const v = $('verdict'), end = at === game.rounds.length - 1
+  v.className = end && game.status === 'stalled' ? 'bad' : ''
+  v.textContent = !end ? 'Game in progress'
+    : game.status === 'stalled' ? 'Game stalled: too many players went offline to continue.'
+    : game.winner ? `Winner: ${nameOf(game.winner)}` : 'Nobody survived.'
+
+  $('timeline').value = at
+  $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round} of ${game.rounds.at(-1).round}`
+}
+
+function go(i) { at = Math.max(0, Math.min(game.rounds.length - 1, i)); draw() }
+function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Play' }
+function toggle() {
+  if (timer) return stop()
+  if (at === game.rounds.length - 1) go(0)
+  $('play').textContent = 'Pause'
+  timer = setInterval(() => at === game.rounds.length - 1 ? stop() : go(at + 1), 1500)
+}
+
+function start(data) {
+  game = data
+  keys = Object.keys(game.rounds[0].state.players).sort()
+  const last = game.rounds.length - 1
+  $('timeline').max = last
+  for (const c of game.cheats ?? []) {
+    const i = game.rounds.findIndex(r => r.round === c.round)
+    if (i < 0) continue
+    const m = el('span', 'mark'); m.title = `Cheat in round ${c.round}`
+    m.style.left = `${(i / Math.max(last, 1)) * 100}%`
+    $('timeline-wrap').append(m)
+  }
+  const bad = game.rejected ?? 0
+  $('rejected').textContent = `${bad} invalid ${bad === 1 ? 'event' : 'events'} thrown away.`
+  draw()
+}
+
+$('play').onclick = toggle
+$('back').onclick = () => { stop(); go(at - 1) }
+$('step').onclick = () => { stop(); go(at + 1) }
+$('timeline').oninput = e => { stop(); go(Number(e.target.value)) }
+$('chat-toggle').onclick = e => { showChat = !showChat; e.target.textContent = showChat ? 'Hide chat' : 'Show chat'; draw() }
+addEventListener('keydown', e => {
+  if (!game || e.target.tagName === 'BUTTON' && e.key === ' ') return
+  if (e.key === ' ') { e.preventDefault(); toggle() }
+  if (e.key === 'ArrowRight' && e.target.id !== 'timeline') { stop(); go(at + 1) }
+  if (e.key === 'ArrowLeft' && e.target.id !== 'timeline') { stop(); go(at - 1) }
+})
+
+const want = new URLSearchParams(location.search).get('game')
+const files = want ? [want] : ['replay.json', 'sample-replay.json']
+;(async () => {
+  for (const f of files) {
+    const res = await fetch(f).catch(() => null)
+    if (res?.ok) return start(await res.json())
+  }
+  $('verdict').textContent = 'No game found. Run node src/arena.ts, then reload this page.'
+  $('verdict').className = 'bad'
+})()
+</script>
+</body>
+</html>

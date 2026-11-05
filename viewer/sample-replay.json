@@ -1,39 +1,240 @@
 {
   "status": "finished",
   "winner": "aaaa1111",
-  "names": { "aaaa1111": "Gemini Flash", "bbbb2222": "Llama", "cccc3333": "Cheater bot" },
+  "names": {
+    "aaaa1111": "Gemini Flash",
+    "bbbb2222": "Llama",
+    "cccc3333": "Cheater bot"
+  },
   "rejected": 1,
   "cheats": [
-    { "pubkey": "cccc3333", "round": 2, "type": "equivocation", "evidence": ["91ab00", "4d0200"] }
+    {
+      "pubkey": "cccc3333",
+      "round": 2,
+      "type": "equivocation",
+      "evidence": [
+        "91ab00",
+        "4d0200"
+      ]
+    }
   ],
   "rounds": [
     {
-      "round": 0, "random": "1f0c", "moves": { "aaaa1111": { "a": "hide" }, "bbbb2222": { "a": "hide" }, "cccc3333": { "a": "hide" } },
-      "state": { "round": 0, "safe": 8, "drops": [], "players": {
-        "aaaa1111": { "x": 1, "y": 1, "hp": 3, "item": null, "alive": true, "hiding": false },
-        "bbbb2222": { "x": 3, "y": 2, "hp": 3, "item": null, "alive": true, "hiding": false },
-        "cccc3333": { "x": 6, "y": 5, "hp": 3, "item": null, "alive": true, "hiding": false } } }
+      "round": 0,
+      "random": "1f0c",
+      "moves": {
+        "aaaa1111": {
+          "a": "hide"
+        },
+        "bbbb2222": {
+          "a": "hide"
+        },
+        "cccc3333": {
+          "a": "hide"
+        }
+      },
+      "state": {
+        "round": 0,
+        "safe": 8,
+        "drops": [],
+        "players": {
+          "aaaa1111": {
+            "x": 1,
+            "y": 1,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          },
+          "bbbb2222": {
+            "x": 3,
+            "y": 2,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          },
+          "cccc3333": {
+            "x": 6,
+            "y": 5,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          }
+        }
+      }
     },
     {
-      "round": 1, "random": "a93e", "moves": { "aaaa1111": { "a": "move", "dir": "E" }, "bbbb2222": { "a": "hide" }, "cccc3333": { "a": "move", "dir": "N" } },
-      "state": { "round": 1, "safe": 8, "drops": [{ "x": 4, "y": 4, "item": "knife" }], "players": {
-        "aaaa1111": { "x": 2, "y": 1, "hp": 3, "item": null, "alive": true, "hiding": false },
-        "bbbb2222": { "x": 3, "y": 2, "hp": 3, "item": null, "alive": true, "hiding": true },
-        "cccc3333": { "x": 6, "y": 4, "hp": 3, "item": null, "alive": true, "hiding": false } } }
+      "round": 1,
+      "random": "a93e",
+      "moves": {
+        "aaaa1111": {
+          "a": "move",
+          "dir": "E"
+        },
+        "bbbb2222": {
+          "a": "hide"
+        },
+        "cccc3333": {
+          "a": "move",
+          "dir": "N"
+        }
+      },
+      "state": {
+        "round": 1,
+        "safe": 8,
+        "drops": [
+          {
+            "x": 4,
+            "y": 4,
+            "item": "knife"
+          }
+        ],
+        "players": {
+          "aaaa1111": {
+            "x": 2,
+            "y": 1,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          },
+          "bbbb2222": {
+            "x": 3,
+            "y": 2,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": true
+          },
+          "cccc3333": {
+            "x": 6,
+            "y": 4,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          }
+        }
+      }
     },
     {
-      "round": 2, "random": "77d1", "moves": { "aaaa1111": { "a": "move", "dir": "S" }, "bbbb2222": { "a": "move", "dir": "E" }, "cccc3333": null },
-      "state": { "round": 2, "safe": 8, "drops": [{ "x": 4, "y": 4, "item": "knife" }], "players": {
-        "aaaa1111": { "x": 2, "y": 2, "hp": 3, "item": null, "alive": true, "hiding": false },
-        "bbbb2222": { "x": 4, "y": 2, "hp": 3, "item": null, "alive": true, "hiding": false },
-        "cccc3333": { "x": 6, "y": 4, "hp": 3, "item": null, "alive": false, "hiding": false } } }
+      "round": 2,
+      "random": "77d1",
+      "moves": {
+        "aaaa1111": {
+          "a": "move",
+          "dir": "S"
+        },
+        "bbbb2222": {
+          "a": "move",
+          "dir": "E"
+        },
+        "cccc3333": null
+      },
+      "state": {
+        "round": 2,
+        "safe": 8,
+        "drops": [
+          {
+            "x": 4,
+            "y": 4,
+            "item": "knife"
+          }
+        ],
+        "players": {
+          "aaaa1111": {
+            "x": 2,
+            "y": 2,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          },
+          "bbbb2222": {
+            "x": 4,
+            "y": 2,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          },
+          "cccc3333": {
+            "x": 6,
+            "y": 4,
+            "hp": 3,
+            "item": null,
+            "alive": false,
+            "hiding": false
+          }
+        }
+      }
     },
     {
-      "round": 3, "random": "c02b", "moves": { "aaaa1111": { "a": "attack", "dir": "E" }, "bbbb2222": { "a": "move", "dir": "W" } },
-      "state": { "round": 3, "safe": 8, "drops": [], "players": {
-        "aaaa1111": { "x": 2, "y": 2, "hp": 3, "item": null, "alive": true, "hiding": false },
-        "bbbb2222": { "x": 3, "y": 2, "hp": 0, "item": null, "alive": false, "hiding": false },
-        "cccc3333": { "x": 6, "y": 4, "hp": 3, "item": null, "alive": false, "hiding": false } } }
+      "round": 3,
+      "random": "c02b",
+      "moves": {
+        "aaaa1111": {
+          "a": "attack",
+          "dir": "E"
+        },
+        "bbbb2222": {
+          "a": "move",
+          "dir": "W"
+        }
+      },
+      "state": {
+        "round": 3,
+        "safe": 8,
+        "drops": [],
+        "players": {
+          "aaaa1111": {
+            "x": 2,
+            "y": 2,
+            "hp": 3,
+            "item": null,
+            "alive": true,
+            "hiding": false
+          },
+          "bbbb2222": {
+            "x": 3,
+            "y": 2,
+            "hp": 0,
+            "item": null,
+            "alive": false,
+            "hiding": false
+          },
+          "cccc3333": {
+            "x": 6,
+            "y": 4,
+            "hp": 3,
+            "item": null,
+            "alive": false,
+            "hiding": false
+          }
+        }
+      }
+    }
+  ],
+  "chat": [
+    {
+      "round": 1,
+      "from": "bbbb2222",
+      "to": "aaaa1111",
+      "text": "[sample text] Truce until the storm?"
+    },
+    {
+      "round": 1,
+      "from": "cccc3333",
+      "to": "aaaa1111",
+      "text": "[sample text] Your aim is garbage."
+    },
+    {
+      "round": 3,
+      "from": "bbbb2222",
+      "to": "aaaa1111",
+      "text": "[sample text] Damn you, traitor."
     }
   ]
 }
