@@ -34,7 +34,7 @@ Last updated Nov 5, 2026.
 - [x] Player loop and arena (`src/player.ts`, `src/arena.ts`)
 - [x] Live attacks: equivocation, changed move, illegal move, state lie, withheld reveal, forgery, quitting, dropping relay
 - [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
-- [x] Styled replay viewer (`viewer/index.html`): animated fighters, fire storm, speech bubbles, CAUGHT stamp
+- [x] Styled replay viewer (`viewer/index.html`): painted arena, animated fights and supply runs, fire storm, speech bubbles, battle log, CAUGHT stamp
 - [x] Demo mode with a hard time limit per model (`--demo`), timing not yet measured on real models
 - [x] Encrypted agent chat, trash talk and last words (tests pass, not yet seen with real models because the daily limit ran out)
 

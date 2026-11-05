@@ -7,7 +7,7 @@ file, and your page draws it.
 **A styled working version already exists at `viewer/index.html`.** It meets every
 requirement below, so your job is to polish it. It's one file with no dependencies
 and no build step. Add `?round=2` to the address to jump to a round with its effects.
-The look is a worn crimson poster with an original burning-whistle emblem, so keep any
+The look is a worn crimson poster around a painted crater arena, with an original burning-whistle emblem, so keep any
 new art original rather than borrowing from existing games or films.
 
 ## Get running

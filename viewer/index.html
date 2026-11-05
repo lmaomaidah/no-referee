@@ -21,25 +21,26 @@
   #tagline { margin: 2px 0 0; color: var(--bone); }
   #round-label { margin-left: auto; font: 400 clamp(28px, 4vw, 46px)/1 var(--poster); color: var(--bone); text-align: right; white-space: nowrap; }
 
-  main { display: grid; grid-template-columns: minmax(300px, 640px) minmax(290px, 1fr); gap: 22px; max-width: 1280px; margin: auto; padding: 10px 20px 22px; }
+  main { display: grid; grid-template-columns: minmax(300px, 780px) minmax(280px, 1fr); gap: 22px; max-width: 1280px; margin: auto; padding: 10px 20px 22px; }
   h2 { margin: 0 0 8px; font: 400 26px/1 var(--poster); letter-spacing: .03em; color: var(--mustard); }
 
   /* The arena */
-  #board { position: relative; aspect-ratio: 1; border: 8px solid var(--soot); border-radius: 10px; background: var(--soot); box-shadow: 0 8px 0 var(--oxblood); }
-  #tiles { position: absolute; inset: 0; display: grid; grid-template: repeat(8, minmax(0, 1fr)) / repeat(8, minmax(0, 1fr)); }
-  .tile { position: relative; overflow: hidden; background: var(--sand); box-shadow: inset 0 0 0 1px #0000001f; }
-  .tile.alt { background: var(--sand2); }
-  .tile.storm { background: var(--oxblood); }
-  .tile.storm::before, .tile.storm::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -6%; height: 88%; background: var(--crimson);
-    clip-path: polygon(50% 0, 66% 30%, 78% 18%, 92% 62%, 100% 100%, 0 100%, 8% 58%, 24% 24%, 34% 40%); animation: flicker 1.1s ease-in-out infinite alternate; transform-origin: bottom; }
-  .tile.storm::after { left: 28%; right: 28%; height: 56%; background: var(--mustard); animation-duration: .8s; }
-  .tile.storm:nth-child(3n)::before { animation-delay: -.4s; } .tile.storm:nth-child(4n)::after { animation-delay: -.3s; }
-  @keyframes flicker { from { transform: scaleY(.9) skewX(-3deg); } to { transform: scaleY(1.08) skewX(3deg); } }
-  .drop { position: absolute; inset: 22%; display: grid; place-items: center; background: var(--soot); color: var(--mustard); border-radius: 50%; }
-  .drop svg { width: 72%; height: 72%; }
+  #board { position: relative; aspect-ratio: 1000 / 860; overflow: hidden; border: 8px solid var(--soot); border-radius: 10px; background: var(--soot); box-shadow: 0 8px 0 var(--oxblood); }
+  #scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .tile { fill: transparent; stroke: #0b2a1233; stroke-width: 1.5; }
+  .tile.storm { fill: #2b0b08b8; stroke: #ff7a2f55; }
+  .fire { display: none; }
+  .fire.on { display: block; }
+  .fire use { transform-box: fill-box; transform-origin: 50% 100%; animation: flicker 1.1s ease-in-out infinite alternate; }
+  .fire:nth-of-type(3n) use { animation-duration: .8s; animation-delay: -.4s; }
+  .fire:nth-of-type(4n) use { animation-delay: -.25s; }
+  @keyframes flicker { from { transform: scaleY(.88) skewX(-4deg); } to { transform: scaleY(1.1) skewX(4deg); } }
+  #drops { position: absolute; inset: 0; pointer-events: none; }
+  .drop { position: absolute; width: 8%; transform: translate(-50%, -78%) scale(var(--s)); filter: drop-shadow(0 3px 2px #0007); }
+  .drop svg { display: block; width: 100%; height: auto; }
 
   #units, #fx { position: absolute; inset: 0; pointer-events: none; }
-  .unit { position: absolute; width: 12.5%; height: 12.5%; transition: left .55s ease, top .55s ease; }
+  .unit { position: absolute; width: 10.5%; aspect-ratio: 1; transform: translate(-50%, -82%) scale(var(--s, 1)); transition: left .55s ease, top .55s ease, transform .55s ease; }
   .unit svg.body { position: absolute; inset: 8% 8% 0; width: 84%; height: 92%; }
   .unit .tag { position: absolute; left: 4%; bottom: 0; width: 34%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; font: 400 clamp(11px, 1.9vw, 17px)/1 var(--poster); color: var(--bone); background: var(--soot); }
   .pips { position: absolute; left: 12%; right: 12%; top: -5%; height: 13%; display: flex; gap: 2px; padding: 2px; background: var(--soot); border-radius: 3px; }
@@ -74,24 +75,24 @@
   @keyframes fall { to { transform: rotate(82deg) translate(6%, 30%); opacity: 0; } }
   @keyframes appear { from { opacity: 0; transform: translateY(20%); } to { opacity: 1; transform: none; } }
 
-  .slash { position: absolute; width: 12.5%; height: 12.5%; display: grid; place-items: center; animation: pop .45s ease-out .85s both; }
+  .slash { position: absolute; width: 11%; aspect-ratio: 1; display: grid; place-items: center; animation: pop .45s ease-out .85s both; }
   .slash::before { content: ""; width: 90%; height: 16%; background: #fff; transform: rotate(-38deg); box-shadow: 0 0 10px var(--mustard); clip-path: polygon(0 50%, 100% 0, 100% 100%); }
-  .float { position: absolute; width: 12.5%; text-align: center; font: 400 clamp(20px, 3.4vw, 32px)/1 var(--poster); color: #fff; -webkit-text-stroke: 1px var(--soot); animation: rise 1.2s ease-out .9s both; }
+  .float { position: absolute; z-index: 40; width: 16%; text-align: center; font: 400 clamp(20px, 3.4vw, 32px)/1 var(--poster); color: #fff; -webkit-text-stroke: 1px var(--soot); animation: rise 1.2s ease-out .9s both; }
   .float.heal { color: #7be08a; }
   .float.word { font-size: clamp(14px, 2.2vw, 21px); color: var(--bone); }
   .float.loot { font-size: clamp(14px, 2.2vw, 21px); color: var(--mustard); animation-delay: .6s; }
   .float.burn { color: #ffb02e; animation-delay: 1.25s; }
-  @keyframes pop { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
-  @keyframes rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-46px); opacity: 0; } }
+  @keyframes pop { from { transform: translate(-50%, -70%) scale(.4); opacity: 1; } to { transform: translate(-50%, -70%) scale(1.5); opacity: 0; } }
+  @keyframes rise { from { transform: translate(-50%, -120%); opacity: 1; } to { transform: translate(-50%, calc(-120% - 46px)); opacity: 0; } }
 
-  .bubble { position: absolute; z-index: 3; width: max-content; max-width: 44%; padding: 6px 10px; background: #fff; color: var(--soot); border: 3px solid var(--soot); border-radius: 12px; font-size: 14px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; animation: bubble 2.4s ease both; }
+  .bubble { position: absolute; z-index: 41; width: max-content; max-width: 44%; padding: 6px 10px; background: #fff; color: var(--soot); border: 3px solid var(--soot); border-radius: 12px; font-size: 14px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; animation: bubble 2.4s ease both; }
   @keyframes bubble { 0% { transform: scale(.6); opacity: 0; } 8%, 88% { transform: scale(1); opacity: 1; } 100% { opacity: 0; } }
 
-  .stamp { position: absolute; z-index: 5; left: 50%; top: 42%; width: 88%; padding: 10px 14px 12px; text-align: center; color: #fff; background: #b3121dee; border: 6px solid #fff; transform: translate(-50%, -50%) rotate(-5deg); animation: stamp 3s ease forwards; }
+  .stamp { position: absolute; z-index: 50; left: 50%; top: 42%; width: 88%; padding: 10px 14px 12px; text-align: center; color: #fff; background: #b3121dee; border: 6px solid #fff; transform: translate(-50%, -50%) rotate(-5deg); animation: stamp 3s ease forwards; }
   .stamp b { display: block; font: 400 clamp(50px, 10vw, 92px)/1 var(--poster); letter-spacing: .03em; }
   .stamp.soft { background: #2a1f1aee; }
   @keyframes stamp { 0% { transform: translate(-50%, -50%) rotate(-5deg) scale(2.2); opacity: 0; } 9%, 86% { transform: translate(-50%, -50%) rotate(-5deg) scale(1); opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(-5deg) scale(1); } }
-  #banner { position: absolute; z-index: 4; left: 0; right: 0; bottom: 8%; padding: 8px 12px 10px; text-align: center; background: #1a1310ee; color: var(--mustard); font: 400 clamp(26px, 5vw, 46px)/1.05 var(--poster); }
+  #banner { position: absolute; z-index: 45; left: 0; right: 0; bottom: 8%; padding: 8px 12px 10px; text-align: center; background: #1a1310ee; color: var(--mustard); font: 400 clamp(26px, 5vw, 46px)/1.05 var(--poster); }
   #banner small { display: block; font: 700 15px/1.3 "Trebuchet MS", Verdana, sans-serif; color: var(--bone); }
 
   /* Controls */
@@ -152,7 +153,8 @@
 <main>
   <section aria-label="Arena">
     <div id="board" role="img" aria-label="Game board">
-      <div id="tiles"></div>
+      <svg id="scene" viewBox="0 0 1000 860" aria-hidden="true"></svg>
+      <div id="drops"></div>
       <div id="units"></div>
       <div id="fx"></div>
       <div id="banner" hidden></div>
@@ -219,7 +221,105 @@ const units = new Map()
 const letter = k => String.fromCharCode(65 + keys.indexOf(k))
 const color = k => COLORS[keys.indexOf(k) % COLORS.length]
 const nameOf = k => game.names?.[k] ?? short(k)
-const pct = n => `${n * 12.5}%`
+
+// Tilted view: rows further away are narrower, higher up and smaller. u and v are in cells.
+const TOP = 215, BOTTOM = 800, FAR = 300, NEAR = 455
+function project(u, v) {
+  const t = v / 8
+  return { x: 500 + (u - 4) / 4 * (FAR + (NEAR - FAR) * t), y: TOP + (BOTTOM - TOP) * t, s: .74 + .34 * t }
+}
+function spot(e, x, y) {
+  const p = project(x + .5, y + .5)
+  e.style.left = `${p.x / 10}%`
+  e.style.top = `${p.y / 8.6}%`
+  e.style.setProperty('--s', p.s)
+  e.style.zIndex = 10 + y
+}
+
+const SPRITES = {
+  knife: `<svg viewBox="0 0 60 56"><path fill="#8a5a2b" stroke="#3a220f" stroke-width="2" d="M6 24h48v28H6z"/><path stroke="#3a220f" stroke-width="2" d="M6 33h48M6 43h48M18 24v28M42 24v28"/><path fill="#dfe6ea" stroke="#333" stroke-width="1.5" d="M44 2 22 26l5 4L48 7z"/><path fill="#5c3a1c" d="M18 27l6 6-4 3-6-6z"/></svg>`,
+  shield: `<svg viewBox="0 0 60 60"><ellipse cx="30" cy="54" rx="20" ry="5" fill="#0004"/><path fill="#2f6fb0" stroke="#17324f" stroke-width="3" d="M30 3l22 7v18c0 13-9 22-22 28C17 50 8 41 8 28V10z"/><path fill="#e0a63a" d="M30 12l12 4v12c0 8-5 13-12 17z"/></svg>`,
+  medkit: `<svg viewBox="0 0 60 52"><path fill="none" stroke="#444" stroke-width="4" d="M22 12V6h16v6"/><rect x="5" y="12" width="50" height="36" rx="5" fill="#f4f1ea" stroke="#555" stroke-width="2"/><path fill="#c52f2c" d="M25 18h10v8h8v10h-8v8H25v-8h-8V26h8z"/></svg>`,
+}
+
+/** Paints the arena once. Seeded, so the scenery is the same on every load. */
+function buildScene() {
+  let seed = 7
+  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647
+  const pick = a => a[Math.floor(rnd() * a.length)]
+  let crowd = ''
+  for (let i = 0; i < 900; i++) {
+    const x = rnd() * 1000, row = rnd(), y = 92 + row * 80 + Math.pow((x - 500) / 500, 2) * 34
+    crowd += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1.6 + row * 1.4).toFixed(1)}" fill="${pick(['#e8dcc2', '#c52f2c', '#e0a63a', '#6f88a8', '#3b4a5a', '#b9a58a', '#f5f1e6'])}"/>`
+  }
+  let arches = ''
+  for (let i = 0; i < 26; i++) {
+    const x = 12 + i * 39, y = 170 + Math.pow((x - 500) / 500, 2) * 36
+    arches += `<path fill="#2f2a2c" d="M${x} ${y + 22}v-14a9 9 0 0 1 18 0v14z"/>`
+  }
+  let rocks = ''
+  for (let i = 0; i < 90; i++) {
+    const left = rnd() < .5, t = rnd(), edge = project(left ? 0 : 8, t * 8)
+    const x = edge.x + (left ? -1 : 1) * (12 + rnd() * 240), y = edge.y + rnd() * 10, w = 8 + rnd() * 34
+    rocks += `<path fill="${pick(['#7d6a55', '#6a5847', '#94806a', '#57483b'])}" d="M${x} ${y}l${w} ${-w * .5}l${w * .6} ${w * .55}z"/>`
+  }
+  let green = ''
+  for (let i = 0; i < 70; i++) {
+    const p = project(rnd() * 8, rnd() * 8), r = 16 + rnd() * 54
+    green += `<ellipse cx="${p.x}" cy="${p.y}" rx="${r}" ry="${r * .42}" fill="${pick(['#5f9e3f', '#4b8a35', '#79b34e', '#8fc05c', '#a3a35a'])}" opacity=".5"/>`
+  }
+  let blades = ''
+  for (let i = 0; i < 420; i++) {
+    const p = project(rnd() * 8, rnd() * 8), h = 4 + 7 * p.s
+    blades += `<path stroke="${pick(['#2f6b2a', '#3f8a35', '#9ccc65'])}" stroke-width="1.4" d="M${p.x.toFixed(0)} ${p.y.toFixed(0)}l${(rnd() * 4 - 2).toFixed(1)} ${-h.toFixed(1)}"/>`
+  }
+  const tree = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})"><ellipse cy="2" rx="17" ry="6" fill="#0005"/><path fill="#5b3a1e" d="M-3 0h6v-14h-6z"/><path fill="#1f5a33" d="M0-74c13 16 16 42 12 62H-12C-16-32-13-58 0-74z"/><path fill="#2f7a45" d="M-2-66c8 14 8 36 5 52h-9C-9-32-8-54-2-66z"/></g>`
+  const trees = [[150, 270, .8], [100, 400, 1], [62, 560, 1.2], [858, 280, .8], [905, 420, 1], [942, 600, 1.2], [205, 228, .6], [800, 230, .6]].map(t => tree(...t)).join('')
+  const disc = (x, y, rx) => `<g transform="translate(${x} ${y})"><ellipse cy="6" rx="${rx}" ry="${rx * .36}" fill="#6a6256"/><ellipse rx="${rx}" ry="${rx * .36}" fill="#d9cfb8"/><ellipse rx="${rx * .72}" ry="${rx * .26}" fill="none" stroke="#a89a7e" stroke-width="3"/><ellipse rx="${rx * .34}" ry="${rx * .12}" fill="#bfb296"/></g>`
+
+  let tiles = '', fires = ''
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const c = [[x, y], [x + 1, y], [x + 1, y + 1], [x, y + 1]].map(([u, v]) => { const p = project(u, v); return `${p.x},${p.y}` }).join(' ')
+    tiles += `<polygon class="tile" points="${c}"/>`
+    const m = project(x + .5, y + .75), w = 62 * m.s
+    fires += `<g class="fire"><use href="#flame" x="${m.x - w / 2}" y="${m.y - w * 1.15}" width="${w}" height="${w * 1.3}"/></g>`
+  }
+
+  $('scene').innerHTML = `
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f6f9e"/><stop offset=".7" stop-color="#e9c98d"/><stop offset="1" stop-color="#f3dfae"/></linearGradient>
+      <linearGradient id="turf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f8a3a"/><stop offset="1" stop-color="#6fae47"/></linearGradient>
+      <linearGradient id="slope" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a7559"/><stop offset="1" stop-color="#5c4a39"/></linearGradient>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#57585e"/><stop offset="1" stop-color="#2a2a30"/></linearGradient>
+      <filter id="mottle"><feTurbulence type="fractalNoise" baseFrequency=".012 .03" numOctaves="4" seed="4"/><feColorMatrix values="0 0 0 0 .1  0 0 0 0 .22  0 0 0 0 .08  0 0 0 1.5 -.62"/></filter>
+      <filter id="soft"><feGaussianBlur stdDeviation="9"/></filter>
+      <symbol id="flame" viewBox="0 0 50 65">
+        <path fill="#c52f2c" d="M25 0c4 12 18 20 20 38 2 16-9 27-20 27S3 54 5 38c1-9 6-12 9-20 2 6 3 8 6 10 1-10 1-18 5-28z"/>
+        <path fill="#f08a2c" d="M25 20c3 9 12 13 13 25 1 11-6 20-13 20s-14-9-13-20c1-8 9-14 13-25z"/>
+        <path fill="#ffd25e" d="M25 38c2 5 7 8 7 15 0 7-3 12-7 12s-7-5-7-12c0-7 5-10 7-15z"/>
+      </symbol>
+    </defs>
+    <rect width="1000" height="190" fill="url(#sky)"/>
+    <g filter="url(#soft)" fill="#fff" opacity=".8"><ellipse cx="180" cy="44" rx="130" ry="17"/><ellipse cx="640" cy="28" rx="170" ry="15"/><ellipse cx="880" cy="64" rx="110" ry="13"/></g>
+    <path fill="url(#wall)" d="M0 86C250 62 750 62 1000 86V250H0z"/>
+    <path fill="#74706c" d="M0 80C250 56 750 56 1000 80v9C750 65 250 65 0 89z"/>
+    ${crowd}${arches}
+    <path fill="#c52f2c" d="M180 66h26v62l-13-11-13 11zM794 66h26v62l-13-11-13 11z"/>
+    <path fill="url(#slope)" d="M0 205H1000V860H0z"/>
+    ${rocks}
+    <path fill="url(#turf)" d="M${project(0, 0).x - 30} ${TOP - 14}Q500 ${TOP - 34} ${project(8, 0).x + 30} ${TOP - 14}L${project(8, 8).x + 44} ${BOTTOM + 8}H${project(0, 8).x - 44}z"/>
+    <rect y="190" width="1000" height="630" filter="url(#mottle)" clip-path="inset(0)" opacity=".55"/>
+    ${green}
+    <path fill="none" stroke="#8fd6e8" stroke-width="9" stroke-linecap="round" opacity=".75" d="M640 212C600 280 700 330 640 400S520 480 560 560 470 700 520 800"/>
+    <path fill="none" stroke="#e6fbff" stroke-width="2.5" opacity=".8" d="M640 212C600 280 700 330 640 400S520 480 560 560 470 700 520 800"/>
+    <ellipse cx="340" cy="560" rx="88" ry="24" fill="#8a6a3f" opacity=".45"/><ellipse cx="710" cy="660" rx="110" ry="28" fill="#8a6a3f" opacity=".4"/>
+    ${disc(500, 490, 118)}${disc(250, 690, 66)}${disc(760, 320, 46)}
+    ${blades}${trees}
+    ${tiles}${fires}
+    <path fill="url(#wall)" d="M0 816H1000V860H0z"/>
+    <path fill="#e0a63a" d="M0 812h1000v5H0z"/>
+    ${[50, 275, 500, 725, 950].map(x => `<path fill="#3c3c44" stroke="#17171b" stroke-width="2" d="M${x - 24} 860v-58h48v58z"/><path fill="#c52f2c" d="M${x - 10} 812h20v30l-10-8-10 8z"/>`).join('')}`
+}
 const safeAt = (x, y, w) => { const lo = (8 - w) / 2; return x >= lo && y >= lo && x <= lo + w - 1 && y <= lo + w - 1 }
 
 // textContent throughout: chat is written by AI models and must never become HTML.
@@ -239,21 +339,25 @@ function makeUnit(k) {
 }
 
 function drawBoard(s) {
-  const tiles = $('tiles')
-  if (!tiles.children.length) for (let i = 0; i < 64; i++) tiles.append(el('div', 'tile'))
-  ;[...tiles.children].forEach((t, i) => {
-    const x = i % 8, y = i >> 3
-    t.className = `tile${(x + y) % 2 ? ' alt' : ''}${safeAt(x, y, s.safe) ? '' : ' storm'}`
-    t.replaceChildren()
-    const drop = s.drops.find(d => d.x === x && d.y === y)
-    if (drop) { const d = el('div', 'drop'); d.innerHTML = ITEMS[drop.item]; d.title = drop.item; t.append(d) }
+  const tiles = document.querySelectorAll('#scene .tile'), fires = document.querySelectorAll('#scene .fire')
+  tiles.forEach((t, i) => {
+    const storm = !safeAt(i % 8, i >> 3, s.safe)
+    t.classList.toggle('storm', storm)
+    fires[i].classList.toggle('on', storm)
   })
+  $('drops').replaceChildren(...s.drops.map(d => {
+    const e = el('div', 'drop')
+    e.innerHTML = SPRITES[d.item]
+    e.title = d.item
+    spot(e, d.x, d.y)
+    return e
+  }))
 }
 
 function drawUnits(s, caught) {
   for (const k of keys) {
     const p = s.players[k], u = units.get(k), hp = Math.max(p.hp, 0)
-    u.style.left = pct(p.x); u.style.top = pct(p.y)
+    spot(u, p.x, p.y)
     u.className = 'unit' + (p.alive ? '' : ' dead') + (p.hiding ? ' hiding' : '') + (caught.has(k) ? ' caught' : '')
       + (hp === 2 ? ' hurt' : hp === 1 ? ' low' : '')
     u.querySelector('.pips').replaceChildren(...[0, 1, 2].map(i => el('i', i < hp ? 'pip' : 'pip gone')))
@@ -294,7 +398,7 @@ function events(round, prev, s) {
 function effects(round, prev, s, list) {
   const fx = $('fx')
   fx.replaceChildren()
-  const place = (e, x, y) => { e.style.left = pct(x); e.style.top = pct(y); fx.append(e) }
+  const place = (e, x, y) => { spot(e, x, y); e.style.zIndex = 40; fx.append(e) }
   void fx.offsetWidth  // restart animations when the same class comes back
   for (const e of list) {
     const u = units.get(e.k), p = s.players[e.k]
@@ -321,8 +425,9 @@ function effects(round, prev, s, list) {
       const delay = said.size * 1.6
       said.add(m.from)
       const p = s.players[m.from], b = el('div', 'bubble', m.text.length > 70 ? `${m.text.slice(0, 68)}…` : m.text)
-      b.style[p.x > 3 ? 'right' : 'left'] = pct(p.x > 3 ? 7 - p.x : p.x + 0.6)
-      b.style[p.y > 3 ? 'bottom' : 'top'] = pct(p.y > 3 ? 8 - p.y : p.y + 1)
+      const at2 = project(p.x + .5, p.y + .5)
+      b.style[p.x > 3 ? 'right' : 'left'] = `${p.x > 3 ? 100 - at2.x / 10 + 3 : at2.x / 10 + 3}%`
+      b.style.bottom = `${100 - at2.y / 8.6 + 5}%`
       b.style.animationDelay = `${delay}s`  // one at a time, so neighbours don't overlap
       fx.append(b)
     }
@@ -395,6 +500,7 @@ function toggle() {
 function start(data) {
   game = data
   keys = Object.keys(game.rounds[0].state.players).sort()
+  buildScene()
   for (const k of keys) units.set(k, makeUnit(k))
   const last = game.rounds.length - 1
   $('timeline').max = last
