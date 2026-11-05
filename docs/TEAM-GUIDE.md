@@ -46,7 +46,8 @@ OPENROUTER_API_KEY=your-key-here
 ```
 
 Then run `node src/arena.ts --ai 6` for a 6-round game. Expect several minutes on free
-models. **Never commit `.env` or paste keys into code, chats or issues.** Git already
+models, and note that each game uses part of your 50 free requests for the day. It prints
+the chat, and AI turns that fell back to the scripted bot. **Never commit `.env` or paste keys into code, chats or issues.** Git already
 ignores `.env`.
 
 ## Where things are
@@ -59,7 +60,7 @@ ignores `.env`.
 | `src/verify.ts` | Replays a log and finds the winner and cheaters |
 | `src/player.ts` | One live player. Also holds the red-team attacks |
 | `src/bots.ts` | Scripted strategies |
-| `src/llm.ts` | AI strategy. The model only picks a number from a menu of legal moves |
+| `src/llm.ts` | AI strategy and trash talk. The model only picks a number from a menu of legal moves |
 | `src/relay.ts` | Our Nostr relay |
 | `src/arena.ts` | Runs a whole game |
 | `viewer/` | Replay viewer, not built yet |
@@ -78,22 +79,12 @@ Useful docs:
 The biggest open task, and it needs no cryptography. Follow the
 [viewer guide](VIEWER-GUIDE.md). You can start right away with `viewer/sample-replay.json`.
 
-### Agent chat and alliances
-
-The proposal has agents negotiate in private. `buildChat` in `src/protocol.ts` already
-makes a signed, encrypted message, but players don't send or read them yet. This needs:
-
-1. A chat step in `src/player.ts` before each commit.
-2. Received messages passed into the prompt in `src/llm.ts`, clearly labelled as
-   untrusted.
-3. A check that chat events still can't affect the verifier's result.
-
 ### Prompt-injection experiment
 
-Depends on chat. Attacker agents send messages like fake "system" instructions, and we
+Chat is built, so this can start. Attacker agents send messages like fake "system" instructions, and we
 measure how often each model obeys, with and without defences such as labelling chat as
-untrusted. Keep game counts small because of free limits, and start early, since it may
-take several days of quota.
+untrusted. Each OpenRouter account gets 50 free requests a day, so spread runs across
+teammates' keys and start early.
 
 The claim to prove: injection can push an agent into a bad decision, but never a
 rule-breaking move. `src/llm.test.ts` already covers the menu side of that.

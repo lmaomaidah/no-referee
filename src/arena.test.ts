@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { runArena } from './arena.ts'
 import { scripted, quitter } from './bots.ts'
+import type { Strategy } from './bots.ts'
 import { verify } from './verify.ts'
 
 const fast = { rounds: 20, timeoutMs: 5000, settleMs: 10 }
@@ -51,4 +52,35 @@ test('a relay that drops most events cannot break the game', async () => {
   const { result } = await runArena(bots, { ...red, fault: () => (n++ % 4 ? 'drop' : 'pass') })
   assert.equal(result.status, 'finished')
   assert.deepEqual(result.cheats, [])
+})
+
+test('chat reaches only its addressee and never touches the result', async () => {
+  const heard: Record<string, string[]> = {}
+  const talker: Strategy = (s, me, talk) => {
+    talk.tell(Object.keys(s.players).sort().find(k => k !== me)!, 'ally with me')
+    return scripted(s, me, talk)
+  }
+  const listener: Strategy = (s, me, talk) => {
+    for (const m of talk.inbox) (heard[me] ??= []).push(m.text)
+    return scripted(s, me, talk)
+  }
+  const { log, config, result, keys } = await runArena([talker, listener, listener, listener], { ...red, rounds: 3 })
+  assert.equal(result.status, 'finished')
+  assert.deepEqual(result.cheats, [])
+  assert.deepEqual(Object.keys(heard), [[...keys].sort().find(k => k !== keys[0])])
+  assert.ok(Object.values(heard)[0].every(t => t === 'ally with me'))
+  assert.ok(!JSON.stringify(log).includes('ally with me'), 'the public log holds only ciphertext')
+  assert.deepEqual(verify(log.filter(e => e.kind !== 7304), config).rounds, result.rounds, 'removing chat changes nothing')
+})
+
+test('a dead player gets last words once, and the demo transcript records them', async () => {
+  const dying: Strategy = (s, me, talk) => {
+    if (!talk.dying) return scripted(s, me, talk)
+    for (const k of Object.keys(s.players)) if (k !== me && s.players[k].alive) talk.tell(k, 'curse you all')
+    return null
+  }
+  const { chat, keys } = await runArena([scripted, scripted, scripted, dying],
+    { ...red, rounds: 4, attacks: { 3: { kind: 'illegal', round: 2 } } })
+  assert.equal(chat.length, 3)
+  assert.ok(chat.every(m => m.from === keys[3] && m.text === 'curse you all'))
 })

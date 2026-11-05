@@ -29,7 +29,9 @@ export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs 
     const done = await Promise.all(sks.map((sk, i) =>
       runPlayer({ config, sk, relays: urls, strategy: strategies[i], timeoutMs, settleMs, attack: attacks[i] })))
     const log = [...new Map(done.flatMap(d => d.events).map(e => [e.id, e])).values()]
-    return { log, config, keys, result: verify(log, config) }
+    // Plaintext for the demo only: the public log stays ciphertext. Each line is what its reader decrypted.
+    const chat = done.flatMap(d => d.heard).sort((a, b) => a.round - b.round)
+    return { log, config, keys, chat, result: verify(log, config) }
   } finally {
     await Promise.all(relays.map(r => r.close()))
   }
@@ -41,17 +43,18 @@ const MODELS = ['nvidia/nemotron-3-ultra-550b-a55b:free', 'nvidia/nemotron-3.5-s
 if (import.meta.main) {
   const ai = process.argv[2] === '--ai'
   const rounds = Number(process.argv[3] ?? 20)
-  const stats = MODELS.map(() => ({ calls: 0, fallbacks: 0, why: {} }))
+  const stats = MODELS.map(() => ({ calls: 0, fallbacks: 0, told: 0, why: {} }))
   if (ai) process.loadEnvFile()
   const key = process.env.OPENROUTER_API_KEY ?? ''
   const players = ai ? [...MODELS.map((m, i) => llm(m, key, stats[i])), scripted] : [scripted, scripted, scripted, scripted]
   const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Scripted bot'] : players.map((_, i) => `Bot ${i + 1}`)
 
-  const { log, config, keys, result } = await runArena(players, { rounds, timeoutMs: ai ? 90_000 : 30_000 })
+  const { log, config, keys, chat, result } = await runArena(players, { rounds, timeoutMs: ai ? 90_000 : 30_000 })
   const names = Object.fromEntries(keys.map((k, i) => [k, labels[i]]))
   mkdirSync('out', { recursive: true })
   writeFileSync('out/log.json', JSON.stringify({ config, log }))
-  writeFileSync('viewer/replay.json', JSON.stringify({ ...result, names }))
+  writeFileSync('viewer/replay.json', JSON.stringify({ ...result, names, chat }))
   console.log(`${result.status}: winner ${result.winner && names[result.winner]}, ${result.rounds.length} rounds, ${log.length} events, ${result.cheats.length} cheats`)
-  if (ai) MODELS.forEach((m, i) => console.log(`${m}: ${stats[i].calls} calls, ${stats[i].fallbacks} fell back to the scripted bot ${JSON.stringify(stats[i].why)}`))
+  for (const m of chat) console.log(`r${m.round} ${names[m.from]} -> ${names[m.to]}: ${m.text}`)
+  if (ai) MODELS.forEach((m, i) => console.log(`${m}: ${stats[i].calls} calls, ${stats[i].told} messages sent, ${stats[i].fallbacks} fell back to the scripted bot ${JSON.stringify(stats[i].why)}`))
 }

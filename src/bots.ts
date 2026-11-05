@@ -1,8 +1,15 @@
 import { legalMove } from './game.ts'
 import type { Dir, Move, State } from './game.ts'
 
+/** Private chat. It reaches the next round's inbox and never affects the rules. */
+export type Talk = {
+  inbox: { from: string, text: string }[],
+  tell: (to: string, text: string) => void,
+  dying: boolean,   // true once, after death: say last words, the returned move is ignored
+}
+
 /** Picks a move. null means go silent for the rest of the game. */
-export type Strategy = (state: State, me: string) => Move | null | Promise<Move | null>
+export type Strategy = (state: State, me: string, talk: Talk) => Move | null | Promise<Move | null>
 
 const STEP: Record<Dir, [number, number]> = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }
 const DIRS = Object.keys(STEP) as Dir[]
@@ -21,5 +28,5 @@ export const scripted: Strategy = (state, me) => {
 }
 
 /** Plays normally, then stops answering from `round` on. */
-export const quitter = (round: number): Strategy => (state, me) =>
-  state.round + 1 >= round ? null : scripted(state, me)
+export const quitter = (round: number): Strategy => (state, me, talk) =>
+  state.round + 1 >= round ? null : scripted(state, me, talk)

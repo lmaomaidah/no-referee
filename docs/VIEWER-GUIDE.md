@@ -30,6 +30,7 @@ For a real game, run `npm install`, then `node src/arena.ts`. It takes under a m
   winner: string | null,             // player key
   names: { [key]: string },          // display names
   rejected: number,                  // invalid events thrown away (forged, outsider, malformed)
+  chat: [{ round, from, to, text }], // trash talk and last words, may be missing
   cheats: [{
     pubkey: string,                  // who was caught
     round: number,
@@ -68,6 +69,8 @@ rather than changing the sample.
 4. For each cheat: who, which round, the type in plain words, and the evidence ids.
 5. The winner, or a clear "game stalled" message.
 6. `rejected`: how many invalid events were thrown away.
+7. The chat, in sync with the round on screen. It's the most entertaining part of the demo.
+   It contains swearing, so add a way to hide it if the audience calls for that.
 
 This list is the requirement, and the look is yours. The audience should spot a
 caught cheater from across the room. Keep it usable by keyboard and on a projector.

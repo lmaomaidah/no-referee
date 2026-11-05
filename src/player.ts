@@ -1,15 +1,17 @@
 import { getPublicKey } from 'nostr-tools/pure'
 import type { Event } from 'nostr-tools/pure'
 import { commitment, makeChain, randomNonce, randomScalar, seedForRound, split } from './crypto.ts'
-import { buildCommit, buildRecover, buildReveal, buildSetup, decryptShare, gameId, parse } from './protocol.ts'
+import { buildChat, buildCommit, buildRecover, buildReveal, buildSetup, decryptShare, gameId, parse, readChat } from './protocol.ts'
 import type { Config, Move, Parsed, Setup } from './protocol.ts'
 import { stateHash } from './game.ts'
 import { replay } from './verify.ts'
 import type { Result } from './verify.ts'
-import type { Strategy } from './bots.ts'
+import type { Strategy, Talk } from './bots.ts'
 
 /** Red team: this player cheats in one round. Honest players never set it. */
 export type Attack = { kind: 'equivocate' | 'change-move' | 'illegal' | 'lie-state' | 'withhold' | 'forge', round: number }
+
+export type Heard = { round: number, from: string, to: string, text: string }
 
 export type PlayerOptions = {
   config: Config, sk: Uint8Array, relays: string[], strategy: Strategy,
@@ -22,7 +24,7 @@ export type PlayerOptions = {
  * One tribute. Each tick replays everything seen so far and acts on what the replay is
  * waiting for, so live play cannot drift from the verifier's rules.
  */
-export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: Event[] }> {
+export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: Event[], heard: Heard[] }> {
   const { config, sk, strategy } = o
   const me = getPublicKey(sk), id = gameId(config), R = config.rounds
   const s0 = randomScalar(), chain = makeChain(s0, R)
@@ -30,7 +32,8 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
   const sockets = o.relays.map(url => new WebSocket(url))
   const mine = new Map<number, { move: Move, nonce: string, revealed: boolean }>()
   const voted = new Set<string>()
-  let silent = false, deciding = false, setupSent = false
+  const inbox: Talk['inbox'] = [], heard: Heard[] = []
+  let silent = false, deciding = false, setupSent = false, lastWords = false
   let latest: Result | null = null   // replay only when a new event arrives
   let waitKey = '', waitSince = Date.now(), settledRound = -1, settleUntil = 0
 
@@ -45,6 +48,13 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
     if (!p) return
     seen.set(p.event.id, p)
     latest = null
+    if (p.type === 'chat' && p.to === me) {
+      const text = readChat(p, sk)
+      if (text !== null) {
+        inbox.push({ from: p.pubkey, text })
+        heard.push({ round: p.round, from: p.pubkey, to: me, text })
+      }
+    }
     if (!silent) sockets.forEach(ws => send(ws, ['EVENT', p.event]))
   }
 
@@ -69,9 +79,15 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
     if (r !== settledRound) { settledRound = r; settleUntil = Date.now() + o.settleMs }
     if (Date.now() < settleUntil) return
 
+    const tell = (to: string, text: string) => publish(buildChat(config, sk, r, to, text))
+    if (p.state && !p.alive.includes(me) && !lastWords) {
+      lastWords = true
+      await strategy(p.state, me, { inbox: [], tell, dying: true })
+    }
+
     if (p.alive.includes(me) && !mine.has(r) && !deciding) {
       deciding = true
-      const move = p.state === null ? { a: 'hide' as const } : await strategy(p.state, me)
+      const move = p.state === null ? { a: 'hide' as const } : await strategy(p.state, me, { inbox: inbox.splice(0), tell, dying: false })
       deciding = false
       if (move === null) { silent = true; return }
       const played: Move = attack === 'illegal' ? { a: 'pickup' } : move
@@ -120,7 +136,7 @@ export function runPlayer(o: PlayerOptions): Promise<{ result: Result, events: E
         if (result.status === 'finished') {
           clearInterval(timer)
           sockets.forEach(ws => ws.close())
-          return resolve({ result, events: [...seen.values()].map(p => p.event) })
+          return resolve({ result, events: [...seen.values()].map(p => p.event), heard })
         }
         if (!silent) await act(result)
       } catch (err) {

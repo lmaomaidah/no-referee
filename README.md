@@ -29,14 +29,14 @@ Last updated Nov 5, 2026.
 - [x] Player loop and arena (`src/player.ts`, `src/arena.ts`)
 - [x] Live attacks: equivocation, changed move, illegal move, state lie, withheld reveal, forgery, quitting, dropping relay
 - [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
+- [x] Encrypted agent chat, trash talk and last words (tests pass, not yet seen with real models because the daily limit ran out)
 
 ### Left
 
 | Task | Owner | Notes |
 |---|---|---|
 | Replay viewer | Teammates | Follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
-| Agent chat and alliances | Open | The signed encrypted message exists, players don't use it yet |
-| Prompt-injection experiment | Open | Needs chat first, and enough model calls |
+| Prompt-injection experiment | Open | Chat is ready. Needs model calls, see known problems |
 | Reliable model access | Open | See known problems |
 | Report | Open | Must state the limits in [docs/PROPOSAL.md](docs/PROPOSAL.md) |
 | Live demo | Everyone | Rehearse with a saved game as backup |
@@ -44,6 +44,9 @@ Last updated Nov 5, 2026.
 
 ### Known problems
 
+- **50 free model requests a day per OpenRouter account.** A 20-round game with three AI
+  players needs up to 60, so it won't fit on one key. Each teammate's own key gets its own
+  50. OpenRouter offers 1000 a day after adding 10 credits, which is outside the $0 budget.
 - **Free models are unreliable.** In a 6-round test game only 4 of 15 AI turns were
   real model moves. The rest hit rate limits, server errors or timeouts and the
   scripted bot played instead. `node src/arena.ts --ai 6` prints these counts.

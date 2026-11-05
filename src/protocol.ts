@@ -109,6 +109,15 @@ export function parse(event: unknown, config: Config): Parsed | null {
   }
 }
 
+/** The text of a chat addressed to sk's owner, or null if it can't be read. */
+export function readChat(chat: Chat, sk: Uint8Array): string | null {
+  try {
+    return nip44.decrypt(chat.ct, nip44.getConversationKey(sk, chat.pubkey))
+  } catch {
+    return null
+  }
+}
+
 /** The share addressed to sk's owner, or null if it is missing, undecryptable or not that holder's share. */
 export function decryptShare(setup: Setup, sk: Uint8Array, config: Config): Share | null {
   try {
