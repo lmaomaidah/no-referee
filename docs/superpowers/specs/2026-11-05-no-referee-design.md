@@ -66,7 +66,8 @@ no parameter properties). Tests use `node --test`. Dependencies: `nostr-tools`,
 `k = floor(n/2) + 1` **(call)**: n=4 gives 3, n=5 gives 3, n=6 gives 4.
 
 Security assumption: fewer than `k` players collude, and at least `k` roster
-members stay online. Eliminated players keep running as share holders until the
+members other than the absent target stay online (a target never contributes its
+own share). Eliminated players keep running as share holders until the
 game ends. If `k` cannot be reached the game stops and the verifier reports
 `stalled`. Nobody can force progress, which is the honest ceiling of k-of-n.
 
@@ -92,6 +93,18 @@ A recovered `s0` is checked against `tip`. A mismatch means someone gave a bad
 share. Without Feldman we cannot say who; the verifier tries `k`-subsets of the
 published shares in sorted order and takes the first that matches `tip`.
 
+If no subset matches, the seed is unrecoverable: the dealer gave bad shares, or
+voters published bad ones. The game must not stall on this, or a cheater gets a
+free abort whenever a round goes badly. Rule **(call)**: the target is ejected as
+`absent` as usual and its seed for that round is the constant
+`sha256hex(canonical(['no-seed', gameId, round, target]))`.
+
+`// ponytail:` known ceiling. A player who dealt bad shares can still choose between
+revealing and withholding after seeing the other seeds. That is one bit of bias on
+one round, once, paid for by being ejected. Feldman VSS plus a commitment binding
+`s0` to `tip` is the upgrade: it would pin the blame on the dealer or the bad voter.
+The report must state this limit.
+
 ### Events
 
 All are regular Nostr events (kinds 7300-7304) signed Schnorr by the player, tags
@@ -108,7 +121,7 @@ All are regular Nostr events (kinds 7300-7304) signed Schnorr by the player, tag
 `h = sha256hex(canonical([gameId, round, pubkey, move, nonce]))`, nonce 32 random
 bytes hex. Binding the round, pubkey and game stops replaying an old commitment
 or copying another player's. `state = stateHash` of the state at round start, so
-any fork shows up in the log.
+any fork shows up in the log. In round 0 no state exists yet, so `state = gameId`.
 
 ### Round flow
 
@@ -153,8 +166,10 @@ Any of these ejects the player in that round with its move void. The seed comes
 from a chain-valid reveal if one exists, else from recovery, so honest players also
 vote `recover` against a `bad-reveal`.
 
-Invalid signatures and non-roster pubkeys are dropped and counted in `rejected`.
-Nobody is accused for them. An honest player's event is never dropped because of
+Everything `parse` refuses (invalid signature, non-roster pubkey, malformed content
+even from a roster member) is dropped and counted in `rejected`. Nobody is accused
+for them. A signed reveal with a malformed move is therefore dropped, so that player
+ends up `absent`, not `illegal-move`: ejected and traced either way. An honest player's event is never dropped because of
 someone else's forgery.
 
 Players publish to every relay and rebroadcast every valid event they see to
@@ -185,13 +200,14 @@ type Move = {a:'move',dir:Dir} | {a:'attack',dir:Dir} | {a:'hide'} | {a:'pickup'
 type Item = 'knife'|'shield'
 type State = { round: number, safe: number, // safe zone width: 8, 6, 4 or 2
   players: Record<string, { x:number, y:number, hp:number, item:Item|null, alive:boolean, hiding:boolean }>,
-  drops: { x:number, y:number, item:Item|'medkit' }[] }
+  drops: { x:number, y:number, item:Item|'medkit' }[],
+  fallen: string[] } // died in the latest applyRound, for the last-two-die tie break
 ```
 
 `game.ts` exports `spawn(roster, random): State`,
 `applyRound(state, moves: Record<pubkey, Move|null>, random): State` (null means
 void, and that player is treated as hiding), `legalMove(state, pubkey, move): boolean`,
-`stateHash(state): string`, `winner(state, random, lastRound): string|null`. A player holds one item; a pickup
+`stateHash(state): string`, `winner(state, random, lastRound: boolean): string|null`. A player holds one item; a pickup
 replaces it. Ejected players are removed by setting `alive: false` before
 `applyRound` runs. `random` is a hex string.
 

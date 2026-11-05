@@ -9,7 +9,7 @@ file, and your page draws it.
 You need Node 24 or newer and git.
 
 ```bash
-git clone -b build/core https://github.com/lmaomaidah/no-referee.git
+git clone https://github.com/lmaomaidah/no-referee.git
 cd no-referee
 npx serve viewer
 ```
@@ -26,7 +26,7 @@ hand-written fake data in the exact real format.
   status: 'finished' | 'stalled',    // stalled: too many players went offline
   winner: string | null,             // player key
   names: { [key]: string },          // display names
-  rejected: number,                  // forged or outsider events thrown away
+  rejected: number,                  // invalid events thrown away (forged, outsider, malformed)
   cheats: [{
     pubkey: string,                  // who was caught
     round: number,
@@ -53,7 +53,7 @@ hand-written fake data in the exact real format.
 - The safe zone is a centred square `safe` cells wide. For width `w`, a cell is
   safe when `x` and `y` are both from `(8-w)/2` to `(8-w)/2 + w - 1`.
 
-Real keys are 64 hex characters, so show `names` and shorten keys like `7f3a…c21e`.
+`hp` can go below 0, so show `max(hp, 0)`. Real keys are 64 hex characters, so show `names` and shorten keys like `7f3a…c21e`.
 The format is a contract with the engine. If you need a field added, ask first
 rather than changing the sample.
 
@@ -64,7 +64,7 @@ rather than changing the sample.
 3. Play, pause, step, and a timeline to jump to any round. Mark the rounds with cheats.
 4. For each cheat: who, which round, the type in plain words, and the evidence ids.
 5. The winner, or a clear "game stalled" message.
-6. `rejected`: how many forged events were thrown away.
+6. `rejected`: how many invalid events were thrown away.
 
 This list is the requirement, and the look is yours. The audience should spot a
 caught cheater from across the room. Keep it usable by keyboard and on a projector.
@@ -83,4 +83,4 @@ Plain words for the cheat types:
 
 ## Sending your work
 
-Work on a branch and open a pull request. Don't commit API keys or `.env`.
+Run `git pull` first, then commit and push to `main`. Don't commit API keys or `.env`.
