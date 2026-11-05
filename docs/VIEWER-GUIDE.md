@@ -9,7 +9,7 @@ file, and your page draws it.
 You need Node 24 or newer and git.
 
 ```bash
-git clone https://github.com/lmaomaidah/no-referee.git
+git clone -b build/core https://github.com/lmaomaidah/no-referee.git
 cd no-referee
 npx serve viewer
 ```
