@@ -54,7 +54,9 @@ no parameter properties). Tests use `node --test`. Dependencies: `nostr-tools`,
 | `src/player.ts` | runs one tribute's protocol loop against relays |
 | `src/arena.ts` | starts relays and players, saves the log |
 | `src/bots.ts` | scripted and cheating strategies |
-| `src/llm.ts` | the AI strategy |
+| `src/llm.ts` | the AI strategy, chat voice and last words |
+| `src/models.ts` | free models in use |
+| `src/injection.ts` | single-turn prompt-injection trials |
 | `viewer/index.html` | replay viewer |
 
 ## Protocol

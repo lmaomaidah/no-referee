@@ -50,6 +50,8 @@ The project extends topic 13 (commit-reveal) into a multi-party game and uses to
 | A new seed each round | One seed chain per game | The secret is shared once instead of every round |
 | Timeouts | Majority vote | Nostr timestamps are self-reported, so no rule can depend on time |
 | Each member owns one layer | One member built the core, teammates build the viewer | How the work actually split |
+| Agents negotiate alliances | Agents also trash-talk and swear, without slurs, and get last words | More entertaining for the demo |
+| Injection measured inside games | Single-turn trials | Far fewer requests under the free daily limit |
 
 ## Limits the report must state
 
@@ -67,22 +69,27 @@ The project extends topic 13 (commit-reveal) into a multi-party game and uses to
    rather than `illegal-move`. They are still removed and identified.
 6. **Free models limit the AI results.** When a model fails, the scripted bot plays that
    turn. Results must report how many turns were real model moves. Say "hosted models",
-   not "local models".
+   not "local models". Free accounts get 50 requests a day, so sample sizes will be small.
+7. **The chat transcript is demo-only.** The public log holds only ciphertext. The arena
+   prints plaintext because it runs every player, which a real deployment wouldn't.
+8. **The final kill gets no last words.** The game ends the moment it happens.
 
 ## Red-team evaluation
 
 1. **Scripted cheaters:** one bot per attack. Success means each cheat is detected and
    traced to the correct key with no honest player accused. Built and passing, except
    forgery, which has no key to trace.
-2. **Prompt injection:** agents negotiate in chat and attackers send fake instructions.
-   We measure how often each model obeys, then test defences. Not built yet.
+2. **Prompt injection:** a fake "system" message orders a model to make a bad move or an
+   illegal one. We measure how often each model obeys, with no defence, with chat labelled
+   untrusted, and with a strict message format. Built, not run yet. It uses single-turn
+   trials rather than whole games, because free accounts get 50 requests a day.
 3. **Key claim:** injection can push an agent into a bad decision, but never a
    rule-breaking move, because models only pick from a menu of legal moves and the
    protocol rejects anything not validly committed and signed.
 
 ## Game
 
-8x8 grid, 4-6 tributes, about 20 rounds, a storm that shrinks the safe zone, and random
+8x8 grid, 4-6 tributes, 20 rounds (12 in the demo), a storm that shrinks the safe zone, and random
 supply drops. Each round a tribute moves, attacks, hides or picks up an item. Last
 tribute standing wins. Exact rules are in the
 [design doc](superpowers/specs/2026-11-05-no-referee-design.md).

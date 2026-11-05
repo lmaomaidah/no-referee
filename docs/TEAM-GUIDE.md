@@ -61,6 +61,8 @@ ignores `.env`.
 | `src/player.ts` | One live player. Also holds the red-team attacks |
 | `src/bots.ts` | Scripted strategies |
 | `src/llm.ts` | AI strategy and trash talk. The model only picks a number from a menu of legal moves |
+| `src/models.ts` | The list of free models in use |
+| `src/injection.ts` | The prompt-injection experiment |
 | `src/relay.ts` | Our Nostr relay |
 | `src/arena.ts` | Runs a whole game |
 | `viewer/` | Replay viewer, not built yet |
