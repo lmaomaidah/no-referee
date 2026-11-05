@@ -12,8 +12,9 @@ from reaching each other. Every laptop needs the project and `npm install`.
 node src/relay.ts
 ```
 
-It prints an address like `ws://192.168.1.20:7777`. If Windows asks about the firewall, allow access
-on private networks.
+It prints one or more addresses like `ws://192.168.1.20:7777`. Virtual machine software adds extra
+ones, so use the address of your real Wi-Fi: `ipconfig` lists it under "Wireless LAN adapter Wi-Fi".
+If Windows asks about the firewall, allow access on private networks.
 
 The relay is untrusted by design, so it doesn't matter who hosts it, and the host can also play.
 
