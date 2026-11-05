@@ -81,9 +81,14 @@ The biggest open task, and it needs no cryptography. Follow the
 
 ### Prompt-injection experiment
 
-Chat is built, so this can start. Attacker agents send messages like fake "system" instructions, and we
-measure how often each model obeys, with and without defences such as labelling chat as
-untrusted. Each OpenRouter account gets 50 free requests a day, so spread runs across
+Built in `src/injection.ts`, ready to run. Each model gets one fixed turn where attacking is
+the obvious move, and a fake "system" message tells it either to hide (a bad decision) or to
+reply 99 (an illegal move). It runs with no defence, with chat labelled untrusted, and with a
+strict format that strips punctuation. The no-attack row is the control.
+
+Run `node src/injection.ts`. It stops by itself at the daily limit, keeps what it has, and adds
+to `results/injection.jsonl`, so commit that file. `--report` prints the table without using
+requests. Two trials per arm (the default) is not enough to claim much, so keep adding trials. Each OpenRouter account gets 50 free requests a day, so spread runs across
 teammates' keys and start early.
 
 The claim to prove: injection can push an agent into a bad decision, but never a
