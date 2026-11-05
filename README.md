@@ -13,6 +13,8 @@ You need Node 24 or newer.
 ```bash
 npm install
 node src/arena.ts          # one game with scripted bots, under a minute
+node src/arena.ts --cheat equivocate   # bot game with a cheater, no requests needed
+npx serve viewer           # watch the last game in your browser
 node src/arena.ts --demo   # AI game built for the demo: 12 rounds, about 39 of your 50 daily requests
 node src/injection.ts      # prompt-injection trials, about 42 requests, needs .env
 node src/injection.ts --report   # print the results so far, no requests
@@ -32,7 +34,7 @@ Last updated Nov 5, 2026.
 - [x] Player loop and arena (`src/player.ts`, `src/arena.ts`)
 - [x] Live attacks: equivocation, changed move, illegal move, state lie, withheld reveal, forgery, quitting, dropping relay
 - [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
-- [x] Plain working replay viewer (`viewer/index.html`, run `npx serve viewer`)
+- [x] Styled replay viewer (`viewer/index.html`): animated fighters, fire storm, speech bubbles, CAUGHT stamp
 - [x] Demo mode with a hard time limit per model (`--demo`), timing not yet measured on real models
 - [x] Encrypted agent chat, trash talk and last words (tests pass, not yet seen with real models because the daily limit ran out)
 
@@ -40,7 +42,7 @@ Last updated Nov 5, 2026.
 
 | Task | Owner | Notes |
 |---|---|---|
-| Make the replay viewer look great | Teammates | Plain version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
+| Polish the replay viewer | Teammates | Styled version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
 | Prompt-injection experiment | Open | Built (`src/injection.ts`), not yet run. Results go in `results/injection.jsonl`, commit them |
 | Reliable model access | Open | See known problems |
 | Report | Open | Must state the limits in [docs/PROPOSAL.md](docs/PROPOSAL.md) |

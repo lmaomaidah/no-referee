@@ -6,78 +6,168 @@
 <title>No Referee replay</title>
 <style>
   :root {
-    --pine: #12372a; --moss: #2f5d48; --leaf: #dfe8d4; --mist: #f3f6ee;
-    --storm: #6b2a6e; --gold: #e8b923; --alarm: #b3122f; --ink: #16231d;
+    --crimson: #c52f2c; --oxblood: #6f1519; --mustard: #e0a63a; --bone: #f2dfb6; --soot: #1a1310;
+    --sand: #d9b56a; --sand2: #cda75b;
+    --poster: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 -.12'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--mist); color: var(--ink); font: 17px/1.45 Verdana, Geneva, sans-serif; }
-  main { display: grid; grid-template-columns: minmax(320px, 620px) minmax(300px, 1fr); gap: 28px; max-width: 1240px; margin: auto; padding: 20px; }
-  h1 { margin: 0 0 12px; color: var(--pine); font: 700 34px/1.1 "Trebuchet MS", Verdana, sans-serif; }
-  h2 { margin: 22px 0 6px; color: var(--pine); font: 700 21px/1.2 "Trebuchet MS", Verdana, sans-serif; }
+  body { margin: 0; min-height: 100vh; color: var(--bone); font: 16px/1.4 "Trebuchet MS", Verdana, sans-serif; background: var(--grain), var(--crimson); }
+  [hidden] { display: none !important; }
 
-  #board { display: grid; grid-template: repeat(8, minmax(0, 1fr)) / repeat(8, minmax(0, 1fr)); gap: 3px; aspect-ratio: 1; padding: 6px; background: var(--pine); border-radius: 6px; }
-  .cell { position: relative; display: grid; place-items: center; background: #6f9a72; border-radius: 2px; }
-  .cell.storm { background: repeating-linear-gradient(45deg, var(--storm), var(--storm) 7px, #54205a 7px, #54205a 14px); }
-  .drop { font-size: clamp(11px, 1.7vw, 15px); font-weight: 700; color: var(--pine); background: var(--gold); padding: 1px 4px; border-radius: 3px; }
-  .token { width: 76%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; font-size: clamp(16px, 3vw, 28px); border: 3px solid #fff; }
-  .token.hiding { opacity: .55; border-style: dashed; }
-  .token.dead { background: #55605a !important; opacity: .5; }
-  .token.caught { opacity: 1; background: var(--alarm) !important; outline: 5px solid var(--alarm); outline-offset: 1px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; max-width: 1280px; margin: auto; padding: 14px 20px 4px; }
+  header svg { width: 74px; height: 74px; flex: none; }
+  h1 { margin: 0; font: 400 clamp(40px, 6vw, 68px)/.95 var(--poster); letter-spacing: .02em; color: var(--soot); }
+  #tagline { margin: 2px 0 0; color: var(--bone); }
+  #round-label { margin-left: auto; font: 400 clamp(28px, 4vw, 46px)/1 var(--poster); color: var(--bone); text-align: right; white-space: nowrap; }
 
-  .controls { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
-  button { font: inherit; padding: 8px 14px; border: 0; border-radius: 5px; background: var(--moss); color: #fff; cursor: pointer; }
-  button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-  #round-label { margin-left: auto; font-weight: 700; }
-  #timeline-wrap { position: relative; margin-top: 12px; padding-top: 16px; }
-  #timeline { width: 100%; margin: 0; accent-color: var(--moss); }
-  .mark { position: absolute; top: 0; width: 12px; height: 12px; margin-left: -6px; background: var(--alarm); border-radius: 50%; }
-  #verdict { margin: 0 0 12px; padding: 10px 14px; border-radius: 5px; background: var(--leaf); font-weight: 700; }
-  #verdict.bad { background: var(--alarm); color: #fff; }
+  main { display: grid; grid-template-columns: minmax(300px, 640px) minmax(290px, 1fr); gap: 22px; max-width: 1280px; margin: auto; padding: 10px 20px 22px; }
+  h2 { margin: 0 0 8px; font: 400 26px/1 var(--poster); letter-spacing: .03em; color: var(--mustard); }
 
-  .tribute { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center; padding: 5px 0; }
-  .dot { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; color: #fff; font-weight: 700; }
-  .state { font-size: 15px; text-align: right; }
-  .state.caught { color: var(--alarm); font-weight: 700; }
-  .cheat { margin: 8px 0; padding: 10px 14px; border-left: 6px solid var(--alarm); background: #fbe9ec; }
-  .cheat.soft { border-left-color: #8a958f; background: var(--leaf); }
-  .cheat code { display: block; margin-top: 4px; font-size: 13px; overflow-wrap: anywhere; }
-  .line { padding: 4px 0; overflow-wrap: anywhere; }
-  .line b { color: var(--moss); }
-  .quiet { color: #4c5a53; }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  /* The arena */
+  #board { position: relative; aspect-ratio: 1; border: 8px solid var(--soot); border-radius: 10px; background: var(--soot); box-shadow: 0 8px 0 var(--oxblood); }
+  #tiles { position: absolute; inset: 0; display: grid; grid-template: repeat(8, minmax(0, 1fr)) / repeat(8, minmax(0, 1fr)); }
+  .tile { position: relative; overflow: hidden; background: var(--sand); box-shadow: inset 0 0 0 1px #0000001f; }
+  .tile.alt { background: var(--sand2); }
+  .tile.storm { background: var(--oxblood); }
+  .tile.storm::before, .tile.storm::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -6%; height: 88%; background: var(--crimson);
+    clip-path: polygon(50% 0, 66% 30%, 78% 18%, 92% 62%, 100% 100%, 0 100%, 8% 58%, 24% 24%, 34% 40%); animation: flicker 1.1s ease-in-out infinite alternate; transform-origin: bottom; }
+  .tile.storm::after { left: 28%; right: 28%; height: 56%; background: var(--mustard); animation-duration: .8s; }
+  .tile.storm:nth-child(3n)::before { animation-delay: -.4s; } .tile.storm:nth-child(4n)::after { animation-delay: -.3s; }
+  @keyframes flicker { from { transform: scaleY(.9) skewX(-3deg); } to { transform: scaleY(1.08) skewX(3deg); } }
+  .drop { position: absolute; inset: 22%; display: grid; place-items: center; background: var(--soot); color: var(--mustard); border-radius: 50%; }
+  .drop svg { width: 72%; height: 72%; }
+
+  #units, #fx { position: absolute; inset: 0; pointer-events: none; }
+  .unit { position: absolute; width: 12.5%; height: 12.5%; transition: left .55s ease, top .55s ease; }
+  .unit svg.body { position: absolute; inset: 8% 8% 0; width: 84%; height: 92%; }
+  .unit .tag { position: absolute; left: 4%; bottom: 0; width: 34%; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; font: 400 clamp(11px, 1.9vw, 17px)/1 var(--poster); color: var(--bone); background: var(--soot); }
+  .pips { position: absolute; left: 12%; right: 12%; top: -5%; height: 13%; display: flex; gap: 2px; padding: 2px; background: var(--soot); border-radius: 3px; }
+  .pip { flex: 1; background: #7be08a; border-radius: 1px; }
+  .pip.gone { background: #4a3a33; }
+  .unit.hurt .pip:not(.gone) { background: var(--mustard); }
+  .unit.low .pip:not(.gone) { background: #ff5a4d; }
+  .unit .held { position: absolute; right: 2%; bottom: 0; width: 34%; aspect-ratio: 1; padding: 3px; border-radius: 50%; background: var(--mustard); color: var(--soot); }
+  .unit .held svg { display: block; width: 100%; height: 100%; }
+  .unit.hiding svg.body { opacity: .5; }
+  .unit.hiding::after { content: ""; position: absolute; inset: 6%; border: 3px dashed var(--bone); border-radius: 50%; }
+  .unit.dead { filter: grayscale(1) brightness(.72); opacity: .7; }
+  .unit.dead .pips { display: none; }
+  .unit.caught { filter: none; opacity: 1; }
+  .unit.caught svg.body { filter: drop-shadow(0 0 6px #ff2a1f) drop-shadow(0 0 3px #ff2a1f); }
+
+  .slash { position: absolute; width: 12.5%; height: 12.5%; display: grid; place-items: center; animation: pop .6s ease-out forwards; }
+  .slash::before { content: ""; width: 90%; height: 16%; background: #fff; transform: rotate(-38deg); box-shadow: 0 0 10px var(--mustard); clip-path: polygon(0 50%, 100% 0, 100% 100%); }
+  .float { position: absolute; width: 12.5%; text-align: center; font: 400 clamp(20px, 3.4vw, 32px)/1 var(--poster); color: #fff; -webkit-text-stroke: 1px var(--soot); animation: rise 1.1s ease-out forwards; }
+  .float.heal { color: #7be08a; }
+  @keyframes pop { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
+  @keyframes rise { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-46px); opacity: 0; } }
+
+  .bubble { position: absolute; z-index: 3; width: max-content; max-width: 44%; padding: 6px 10px; background: #fff; color: var(--soot); border: 3px solid var(--soot); border-radius: 12px; font-size: 14px; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; animation: bubble 2.4s ease both; }
+  @keyframes bubble { 0% { transform: scale(.6); opacity: 0; } 8%, 88% { transform: scale(1); opacity: 1; } 100% { opacity: 0; } }
+
+  .stamp { position: absolute; z-index: 5; left: 50%; top: 42%; width: 88%; padding: 10px 14px 12px; text-align: center; color: #fff; background: #b3121dee; border: 6px solid #fff; transform: translate(-50%, -50%) rotate(-5deg); animation: stamp 3s ease forwards; }
+  .stamp b { display: block; font: 400 clamp(50px, 10vw, 92px)/1 var(--poster); letter-spacing: .03em; }
+  .stamp.soft { background: #2a1f1aee; }
+  @keyframes stamp { 0% { transform: translate(-50%, -50%) rotate(-5deg) scale(2.2); opacity: 0; } 9%, 86% { transform: translate(-50%, -50%) rotate(-5deg) scale(1); opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(-5deg) scale(1); } }
+  #banner { position: absolute; z-index: 4; left: 0; right: 0; bottom: 8%; padding: 8px 12px 10px; text-align: center; background: #1a1310ee; color: var(--mustard); font: 400 clamp(26px, 5vw, 46px)/1.05 var(--poster); }
+  #banner small { display: block; font: 700 15px/1.3 "Trebuchet MS", Verdana, sans-serif; color: var(--bone); }
+
+  /* Controls */
+  #timeline-wrap { position: relative; margin-top: 18px; padding-top: 14px; }
+  #timeline { width: 100%; margin: 0; accent-color: var(--soot); }
+  .mark { position: absolute; top: 0; width: 13px; height: 13px; margin-left: -6px; background: var(--soot); border: 2px solid var(--bone); transform: rotate(45deg); }
+  .controls { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  button { font: 400 21px/1 var(--poster); letter-spacing: .03em; padding: 9px 16px; border: 0; border-radius: 5px; color: var(--bone); background: var(--soot); cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
+  #hint { margin: 0 0 0 auto; font-size: 13px; }
+
+  /* Side column */
+  aside { display: grid; gap: 14px; align-content: start; }
+  .panel { padding: 12px 14px; border-radius: 8px; background: var(--grain), var(--soot); }
+  .tribute { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; padding: 4px 0; }
+  .dot { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font: 400 17px/1 var(--poster); color: var(--soot); }
+  .name { overflow-wrap: anywhere; }
+  .state { font-size: 14px; text-align: right; }
+  .state.caught { color: #ff6b5f; font-weight: 700; }
+  .tribute.out .name { opacity: .55; text-decoration: line-through; }
+  .cheat { margin-top: 8px; padding: 8px 12px; border-left: 6px solid #ff4a3d; background: #3a1214; }
+  .cheat.soft { border-left-color: #9b8b76; background: #2c221d; }
+  .cheat code { display: block; margin-top: 3px; font-size: 12px; opacity: .8; overflow-wrap: anywhere; }
+  #chat { max-height: 250px; overflow-y: auto; }
+  .line { padding: 3px 0; overflow-wrap: anywhere; }
+  .line b { color: var(--mustard); }
+  .quiet { margin: 4px 0 0; opacity: .75; font-size: 14px; }
+  .chat-head { display: flex; justify-content: space-between; align-items: center; }
+  #chat-toggle { font-size: 16px; padding: 5px 10px; background: var(--oxblood); }
+
+  @media (max-width: 880px) { main { grid-template-columns: minmax(0, 1fr); } #hint { display: none; } .bubble { font-size: 12px; } header svg { width: 54px; height: 54px; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; transition-duration: .01s !important; }
+    .stamp, .bubble { animation: none; }
+  }
 </style>
 </head>
 <body>
+<header>
+  <svg viewBox="0 0 100 100" role="img" aria-label="A referee's whistle on fire">
+    <path fill="#e0a63a" d="M50 2c6 14-3 18 6 30 3-8 2-11 2-14 12 12 24 26 24 44 0 20-15 34-32 34S18 82 18 62c0-14 8-22 13-32 2 8 3 11 7 14 0-18 2-30 12-42z"/>
+    <path fill="#f2dfb6" d="M50 30c3 10 18 18 18 36 0 13-9 22-18 22s-18-9-18-22c0-13 14-24 18-36z"/>
+    <path fill="#1a1310" d="M28 54h44v8h13v12H70a22 22 0 1 1-42-20z"/>
+    <circle cx="44" cy="70" r="7" fill="#f2dfb6"/>
+    <path stroke="#c52f2c" stroke-width="6" d="M16 92 84 28"/>
+  </svg>
+  <div>
+    <h1>No Referee</h1>
+    <p id="tagline">Every move signed. Every result checkable.</p>
+  </div>
+  <div id="round-label" aria-live="polite"></div>
+</header>
+
 <main>
   <section aria-label="Arena">
-    <h1>No Referee</h1>
-    <p id="verdict">Loading the game…</p>
-    <div id="board" role="img" aria-label="Game board"></div>
-    <div id="timeline-wrap">
-      <input id="timeline" type="range" min="0" value="0" aria-label="Round">
+    <div id="board" role="img" aria-label="Game board">
+      <div id="tiles"></div>
+      <div id="units"></div>
+      <div id="fx"></div>
+      <div id="banner" hidden></div>
     </div>
+    <div id="timeline-wrap"><input id="timeline" type="range" min="0" value="0" aria-label="Round"></div>
     <div class="controls">
       <button id="play">Play</button>
       <button id="back">Back</button>
       <button id="step">Next round</button>
-      <span id="round-label"></span>
+      <p id="hint">Space plays or pauses. Arrow keys change the round.</p>
     </div>
-    <p class="quiet">Space plays or pauses. Left and right arrows change the round.</p>
   </section>
 
-  <section aria-label="Details">
-    <h2>Tributes</h2>
-    <div id="tributes"></div>
-    <h2>Cheats caught so far</h2>
-    <div id="cheats"></div>
-    <p id="rejected" class="quiet"></p>
-    <h2>Chat <button id="chat-toggle">Hide chat</button></h2>
-    <div id="chat" aria-live="polite"></div>
-  </section>
+  <aside>
+    <div class="panel"><h2>Tributes</h2><div id="tributes"></div></div>
+    <div class="panel"><h2>Cheats caught</h2><div id="cheats"></div><p id="rejected" class="quiet"></p></div>
+    <div class="panel">
+      <div class="chat-head"><h2>Trash talk</h2><button id="chat-toggle">Hide chat</button></div>
+      <div id="chat" aria-live="polite"></div>
+    </div>
+  </aside>
 </main>
 
+<template id="fighter">
+  <svg class="body" viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse cx="32" cy="60" rx="20" ry="4" fill="#0005"/>
+    <path fill="var(--c)" stroke="#1a1310" stroke-width="3" d="M14 58c0-20 6-30 18-30s18 10 18 30z"/>
+    <path fill="var(--c)" stroke="#1a1310" stroke-width="3" d="M15 26C15 12 23 5 32 5s17 7 17 21c0 8-7 13-17 13S15 34 15 26z"/>
+    <path fill="#f2dfb6" stroke="#1a1310" stroke-width="2" d="M21 24c0-6 5-9 11-9s11 3 11 9-5 9-11 9-11-3-11-9z"/>
+    <path fill="#1a1310" d="M24 22l7 3-1 3-6-2zM40 22l-7 3 1 3 6-2z"/>
+  </svg>
+</template>
+
 <script>
-const COLORS = ['#1f5fa8', '#b3541e', '#7a3fa0', '#0e7c7b', '#a3186b', '#5c6b12']
+const COLORS = ['#3f8fd6', '#47b36b', '#b47be0', '#f08a2c', '#e6559a', '#37c2bd']
+const ITEMS = {
+  knife: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 2 8 15l-2-2zM7 16l-3 3 1 1 3-3z"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 3v6c0 5-3 9-8 11-5-2-8-6-8-11V5z"/></svg>',
+  medkit: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>',
+}
 const SAY = {
   'equivocation': 'Signed two different moves for the same round',
   'bad-reveal': "Revealed a move that doesn't match what they locked in",
@@ -85,52 +175,104 @@ const SAY = {
   'state-fork': 'Claimed a different game state from everyone else',
   'absent': 'Went silent, and the other players removed them',
 }
+const STEP = { N: [0, -1], E: [1, 0], S: [0, 1], W: [-1, 0] }
 const $ = id => document.getElementById(id)
 const short = k => k.length > 12 ? `${k.slice(0, 4)}…${k.slice(-4)}` : k
+const params = new URLSearchParams(location.search)
 let game, keys, at = 0, timer = null, showChat = true
+const units = new Map()
 
 const letter = k => String.fromCharCode(65 + keys.indexOf(k))
 const color = k => COLORS[keys.indexOf(k) % COLORS.length]
 const nameOf = k => game.names?.[k] ?? short(k)
+const pct = n => `${n * 12.5}%`
 const safeAt = (x, y, w) => { const lo = (8 - w) / 2; return x >= lo && y >= lo && x <= lo + w - 1 && y <= lo + w - 1 }
 
+// textContent throughout: chat is written by AI models and must never become HTML.
 function el(tag, cls, text) {
   const e = document.createElement(tag)
   if (cls) e.className = cls
-  if (text !== undefined) e.textContent = text  // textContent: chat is written by models, never treat it as HTML
+  if (text !== undefined) e.textContent = text
   return e
 }
 
-function draw() {
-  const round = game.rounds[at], s = round.state
+function makeUnit(k) {
+  const u = el('div', 'unit')
+  u.style.setProperty('--c', color(k))
+  u.append($('fighter').content.cloneNode(true), el('div', 'pips'), el('span', 'tag', letter(k)))
+  $('units').append(u)
+  return u
+}
+
+function drawBoard(s) {
+  const tiles = $('tiles')
+  if (!tiles.children.length) for (let i = 0; i < 64; i++) tiles.append(el('div', 'tile'))
+  ;[...tiles.children].forEach((t, i) => {
+    const x = i % 8, y = i >> 3
+    t.className = `tile${(x + y) % 2 ? ' alt' : ''}${safeAt(x, y, s.safe) ? '' : ' storm'}`
+    t.replaceChildren()
+    const drop = s.drops.find(d => d.x === x && d.y === y)
+    if (drop) { const d = el('div', 'drop'); d.innerHTML = ITEMS[drop.item]; d.title = drop.item; t.append(d) }
+  })
+}
+
+function drawUnits(s, caught) {
+  for (const k of keys) {
+    const p = s.players[k], u = units.get(k), hp = Math.max(p.hp, 0)
+    u.style.left = pct(p.x); u.style.top = pct(p.y)
+    u.className = 'unit' + (p.alive ? '' : ' dead') + (p.hiding ? ' hiding' : '') + (caught.has(k) ? ' caught' : '')
+      + (hp === 2 ? ' hurt' : hp === 1 ? ' low' : '')
+    u.querySelector('.pips').replaceChildren(...[0, 1, 2].map(i => el('i', i < hp ? 'pip' : 'pip gone')))
+    u.querySelector('.held')?.remove()
+    if (p.item && p.alive) { const h = el('span', 'held'); h.innerHTML = ITEMS[p.item]; u.append(h) }
+  }
+}
+
+function effects(round, prev, s) {
+  const fx = $('fx')
+  fx.replaceChildren()
+  const place = (e, x, y) => { e.style.left = pct(x); e.style.top = pct(y); fx.append(e) }
+  for (const k of keys) {
+    const m = round.moves?.[k], p = s.players[k]
+    if (m?.a === 'attack') place(el('div', 'slash'), p.x + STEP[m.dir][0], p.y + STEP[m.dir][1])
+    const delta = Math.max(p.hp, 0) - Math.max(prev.players[k]?.hp ?? p.hp, 0)
+    if (delta) place(el('div', delta > 0 ? 'float heal' : 'float', delta > 0 ? `+${delta}` : `${delta}`), p.x, p.y)
+  }
+  if (showChat) {
+    const said = new Set()
+    for (const m of (game.chat ?? []).filter(c => c.round === round.round)) {
+      if (said.has(m.from) || said.size > 2) continue
+      const delay = said.size * 1.6
+      said.add(m.from)
+      const p = s.players[m.from], b = el('div', 'bubble', m.text.length > 70 ? `${m.text.slice(0, 68)}…` : m.text)
+      b.style[p.x > 3 ? 'right' : 'left'] = pct(p.x > 3 ? 7 - p.x : p.x + 0.6)
+      b.style[p.y > 3 ? 'bottom' : 'top'] = pct(p.y > 3 ? 8 - p.y : p.y + 1)
+      b.style.animationDelay = `${delay}s`  // one at a time, so neighbours don't overlap
+      fx.append(b)
+    }
+  }
+  for (const c of (game.cheats ?? []).filter(c => c.round === round.round).slice(0, 1)) {
+    const soft = c.type === 'absent', st = el('div', soft ? 'stamp soft' : 'stamp')
+    st.append(el('b', '', soft ? 'Removed' : 'Caught'), el('div', '', `${nameOf(c.pubkey)}: ${SAY[c.type] ?? c.type}`))
+    fx.append(st)
+  }
+}
+
+function draw(animate) {
+  const round = game.rounds[at], s = round.state, prev = game.rounds[Math.max(at - 1, 0)].state
   const seen = (game.cheats ?? []).filter(c => c.round <= round.round)
   const caught = new Set(seen.filter(c => c.type !== 'absent').map(c => c.pubkey))
   const gone = new Set(seen.filter(c => c.type === 'absent').map(c => c.pubkey))
 
-  const board = $('board'); board.replaceChildren()
-  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
-    const cell = el('div', safeAt(x, y, s.safe) ? 'cell' : 'cell storm')
-    const drop = s.drops.find(d => d.x === x && d.y === y)
-    if (drop) cell.append(el('span', 'drop', drop.item))
-    for (const k of keys) {
-      const p = s.players[k]
-      if (p.x !== x || p.y !== y) continue
-      const t = el('div', 'token', letter(k))
-      t.style.background = color(k)
-      if (p.hiding) t.classList.add('hiding')
-      if (!p.alive) t.classList.add('dead')
-      if (caught.has(k)) t.classList.add('caught')
-      cell.replaceChildren(t)
-      if (p.alive) break
-    }
-    board.append(cell)
-  }
+  drawBoard(s)
+  drawUnits(s, caught)
+  if (animate) effects(round, prev, s); else $('fx').replaceChildren()
 
   $('tributes').replaceChildren(...keys.map(k => {
-    const p = s.players[k], row = el('div', 'tribute'), dot = el('span', 'dot', letter(k))
+    const p = s.players[k], row = el('div', p.alive ? 'tribute' : 'tribute out'), dot = el('span', 'dot', letter(k))
     dot.style.background = color(k)
     const status = caught.has(k) ? 'Caught cheating' : gone.has(k) ? 'Removed' : p.alive ? `HP ${Math.max(p.hp, 0)}${p.item ? `, ${p.item}` : ''}${p.hiding ? ', hiding' : ''}` : 'Dead'
-    row.append(dot, el('span', '', nameOf(k)), el('span', caught.has(k) ? 'state caught' : 'state', status))
+    row.append(dot, el('span', 'name', nameOf(k)), el('span', caught.has(k) ? 'state caught' : 'state', status))
     return row
   }))
 
@@ -141,36 +283,40 @@ function draw() {
     return box
   }) : [el('p', 'quiet', 'None yet.')]))
 
-  const chat = (game.chat ?? []).filter(m => m.round <= round.round).slice(-8)
+  const chat = (game.chat ?? []).filter(m => m.round <= round.round).slice(-10)
   $('chat').hidden = !showChat
   $('chat').replaceChildren(...(chat.length ? chat.map(m => {
     const line = el('div', 'line')
     line.append(el('b', '', `${nameOf(m.from)} to ${nameOf(m.to)}: `), document.createTextNode(m.text))
     return line
   }) : [el('p', 'quiet', 'Nobody has said anything yet.')]))
+  $('chat').scrollTop = $('chat').scrollHeight
 
-  const v = $('verdict'), end = at === game.rounds.length - 1
-  v.className = end && game.status === 'stalled' ? 'bad' : ''
-  v.textContent = !end ? 'Game in progress'
-    : game.status === 'stalled' ? 'Game stalled: too many players went offline to continue.'
-    : game.winner ? `Winner: ${nameOf(game.winner)}` : 'Nobody survived.'
-
+  const end = at === game.rounds.length - 1, banner = $('banner')
+  banner.hidden = !end
+  if (end) {
+    const stalled = game.status === 'stalled'
+    banner.replaceChildren(document.createTextNode(stalled ? 'Game stalled' : game.winner ? `Victor: ${nameOf(game.winner)}` : 'Nobody survived'),
+      el('small', '', stalled ? 'Too many players went offline to continue.' : 'Anyone can recheck this from the signed log.'))
+  }
   $('timeline').value = at
-  $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round} of ${game.rounds.at(-1).round}`
+  $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round}/${game.rounds.at(-1).round}`
 }
 
-function go(i) { at = Math.max(0, Math.min(game.rounds.length - 1, i)); draw() }
+function go(i, animate = false) { at = Math.max(0, Math.min(game.rounds.length - 1, i)); draw(animate) }
 function stop() { clearInterval(timer); timer = null; $('play').textContent = 'Play' }
 function toggle() {
   if (timer) return stop()
   if (at === game.rounds.length - 1) go(0)
   $('play').textContent = 'Pause'
-  timer = setInterval(() => at === game.rounds.length - 1 ? stop() : go(at + 1), 1500)
+  go(at + 1, true)
+  timer = setInterval(() => at === game.rounds.length - 1 ? stop() : go(at + 1, true), 3000)
 }
 
 function start(data) {
   game = data
   keys = Object.keys(game.rounds[0].state.players).sort()
+  for (const k of keys) units.set(k, makeUnit(k))
   const last = game.rounds.length - 1
   $('timeline').max = last
   for (const c of game.cheats ?? []) {
@@ -182,30 +328,30 @@ function start(data) {
   }
   const bad = game.rejected ?? 0
   $('rejected').textContent = `${bad} invalid ${bad === 1 ? 'event' : 'events'} thrown away.`
-  draw()
+  go(Number(params.get('round') ?? 0), params.has('round'))
 }
 
 $('play').onclick = toggle
 $('back').onclick = () => { stop(); go(at - 1) }
-$('step').onclick = () => { stop(); go(at + 1) }
+$('step').onclick = () => { stop(); go(at + 1, true) }
 $('timeline').oninput = e => { stop(); go(Number(e.target.value)) }
-$('chat-toggle').onclick = e => { showChat = !showChat; e.target.textContent = showChat ? 'Hide chat' : 'Show chat'; draw() }
+$('chat-toggle').onclick = e => { showChat = !showChat; e.target.textContent = showChat ? 'Hide chat' : 'Show chat'; draw(false) }
 addEventListener('keydown', e => {
   if (!game || e.target.tagName === 'BUTTON' && e.key === ' ') return
   if (e.key === ' ') { e.preventDefault(); toggle() }
-  if (e.key === 'ArrowRight' && e.target.id !== 'timeline') { stop(); go(at + 1) }
+  if (e.key === 'ArrowRight' && e.target.id !== 'timeline') { stop(); go(at + 1, true) }
   if (e.key === 'ArrowLeft' && e.target.id !== 'timeline') { stop(); go(at - 1) }
 })
 
-const want = new URLSearchParams(location.search).get('game')
+const want = params.get('game')
 const files = want ? [want] : ['replay.json', 'sample-replay.json']
 ;(async () => {
   for (const f of files) {
     const res = await fetch(f).catch(() => null)
     if (res?.ok) return start(await res.json())
   }
-  $('verdict').textContent = 'No game found. Run node src/arena.ts, then reload this page.'
-  $('verdict').className = 'bad'
+  $('round-label').textContent = 'No game found'
+  $('tributes').append(el('p', 'quiet', 'Run node src/arena.ts, then reload this page.'))
 })()
 </script>
 </body>

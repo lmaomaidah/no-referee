@@ -65,7 +65,7 @@ ignores `.env`.
 | `src/injection.ts` | The prompt-injection experiment |
 | `src/relay.ts` | Our Nostr relay |
 | `src/arena.ts` | Runs a whole game |
-| `viewer/` | Replay viewer: plain version works, needs styling |
+| `viewer/` | Replay viewer: styled and working, open to polish |
 
 Useful docs:
 
@@ -78,8 +78,7 @@ Useful docs:
 
 ### Replay viewer
 
-A plain version works, and it needs someone to make it look great. No cryptography
-needed. Follow the [viewer guide](VIEWER-GUIDE.md), and use `viewer/sample-replay.json`
+A styled version works and is open to polish. No cryptography needed. Follow the [viewer guide](VIEWER-GUIDE.md), and use `viewer/sample-replay.json`
 to start.
 
 ### Prompt-injection experiment

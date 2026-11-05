@@ -41,18 +41,23 @@ export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs 
 /**
  * `node src/arena.ts` plays bots. `--ai [rounds]` puts the MODELS in, plus one bot.
  * `--demo` is an AI game built to end on time: 12 rounds, 15 s per model, about 39 requests.
+ * `--cheat <kind>` is a bot game where one player attacks in round 3, no requests. Kinds are listed in Attack.
  */
 if (import.meta.main) {
   const demo = process.argv[2] === '--demo'
+  const cheat = process.argv[2] === '--cheat' ? (process.argv[3] ?? 'equivocate') as Attack['kind'] : null
   const ai = demo || process.argv[2] === '--ai'
-  const rounds = demo ? 12 : Number(process.argv[3] ?? 20)
+  const rounds = demo || cheat ? 12 : Number(process.argv[3] ?? 20)
   const stats = MODELS.map(() => ({ calls: 0, fallbacks: 0, told: 0, why: {} }))
   if (ai) process.loadEnvFile()
   const key = process.env.OPENROUTER_API_KEY ?? ''
   const players = ai ? [...MODELS.map((m, i) => llm(m, key, stats[i], CHAT_URL, demo ? 15_000 : 60_000)), scripted] : [scripted, scripted, scripted, scripted]
-  const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Scripted bot'] : players.map((_, i) => `Bot ${i + 1}`)
+  const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Scripted bot'] : players.map((_, i) => cheat && i === 3 ? 'Cheater bot' : `Bot ${i + 1}`)
 
-  const { log, config, keys, chat, result } = await runArena(players, { rounds, timeoutMs: ai ? 90_000 : 30_000 })
+  const { log, config, keys, chat, result } = await runArena(players, {
+    rounds, timeoutMs: ai ? 90_000 : cheat ? 5000 : 30_000, settleMs: 300,
+    attacks: cheat ? { 3: { kind: cheat, round: 3 } } : {},
+  })
   const names = Object.fromEntries(keys.map((k, i) => [k, labels[i]]))
   mkdirSync('out', { recursive: true })
   writeFileSync('out/log.json', JSON.stringify({ config, log }))
