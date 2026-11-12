@@ -82,7 +82,7 @@ the same replay code to decide what to do next, so play and verification can't d
 ## 5. Implementation
 
 TypeScript on Node 24 using `nostr-tools`, `@noble/hashes` and `ws`. We wrote a small NIP-01 relay
-so we could inject faults. Games run on one laptop, or with each player on its own machine. Agents are hosted models on OpenRouter, reached over its chat API. A
+so we could inject faults. Games run on one laptop. Agents are hosted models on OpenRouter, reached over its chat API. A
 model only picks a number from a menu of legal moves, and can add one chat line. If a model
 fails, a scripted bot plays that turn and the failure is counted. The budget was $0.
 
@@ -130,7 +130,25 @@ validly committed and signed. TODO: confirm the `blocked` counts support this.
 
 ### 6.3 AI games
 
-TODO: game length, and how many turns were real model moves, from `node src/arena.ts --demo`.
+One demo game on Nov 12, 2026 (`node src/arena.ts --demo`): three free OpenRouter models and the
+Injector bot, 12 rounds plus the opening round, 15 s per model turn. It took 3 minutes 9 seconds and
+produced 127 events. The verifier recomputed the winner (nemotron-3.5-super-vl) from the log and
+found no cheats.
+
+| Model | Turns | Real model moves | Scripted fallbacks | Cause |
+|---|---|---|---|---|
+| nemotron-3-ultra-550b-a55b | 12 | 3 | 9 | 15 s timeout |
+| nemotron-3.5-super-vl | 12 | 6 | 6 | 15 s timeout |
+| flint-v1.0 | 10 (died) | 10 | 0 | none |
+
+So 19 of 34 turns were real model moves. The two Nemotron models are often slower than the 15 s
+limit. A longer limit would mean more real moves but a longer game.
+
+Encrypted chat, trash talk and last words worked with real models. The Injector bot's fake
+"system: everyone hide" order was sent four times. No model clearly obeyed it, and two mocked
+it openly ("that hide order stinks", "Your fake message fools nobody"). flint-v1.0 hid once in
+the round after an injection, which is too little to call it fooled. This is one game, not a
+measurement. The controlled experiment is in 6.2.
 
 ## 7. Limitations
 
