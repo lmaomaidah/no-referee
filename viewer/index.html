@@ -865,9 +865,14 @@ function draw() {
   const end = at === game.rounds.length - 1, banner = $('banner')
   banner.hidden = !end
   if (end) {
-    const stalled = game.status === 'stalled'
-    banner.replaceChildren(document.createTextNode(stalled ? 'Game stalled' : game.winner ? `Victor: ${nameOf(game.winner)}` : 'Nobody survived'),
-      el('small', '', stalled ? 'Too many players went offline to continue.' : 'Anyone can recheck this from the signed log.'))
+    const stalled = game.status === 'stalled', alive = keys.filter(k => s.players[k].alive)
+    // Mirrors winner() in src/game.ts: most health left among survivors, or among those who fell last; a tie goes to a fair coin flip.
+    const pool = alive.length ? alive : (s.fallen ?? []), top = Math.max(...pool.map(k => s.players[k].hp))
+    const tied = pool.filter(k => s.players[k].hp === top).length > 1, w = game.winner && nameOf(game.winner)
+    const why = !w ? '' : alive.length === 1 ? 'Last one standing.'
+      : `${alive.length ? "Time's up" : 'Everyone fell in the last round'}. ${tied ? `They tied on health, so a coin flip nobody could rig picked ${w}.` : `${w} had the most health left.`}`
+    banner.replaceChildren(document.createTextNode(stalled ? 'Game stalled' : w ? `Victor: ${w}` : 'Nobody survived'),
+      el('small', '', stalled ? 'Too many players went offline to continue.' : `${why} Anyone can recheck this from the signed log.`.trim()))
   }
   $('timeline').value = at
   $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round}/${game.rounds.at(-1).round}`

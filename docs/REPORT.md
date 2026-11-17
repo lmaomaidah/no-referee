@@ -265,7 +265,11 @@ reached over its chat API. A model only picks a number from a menu of legal move
 chat line. If a model fails, a scripted bot plays that turn and the failure is counted. The budget
 was $0.
 
-The game is an 8x8 grid with 3 HP per tribute, a shrinking fire zone, and supply drops. A replay
+The game is an 8x8 grid with 3 HP per tribute, a shrinking fire zone, and supply drops. The last
+tribute standing wins. If everyone left dies in the same round, or the last round ends with several
+alive, the one with the most HP left wins (fire stops at 0 HP, but a knife can push HP below 0). A
+tie on HP is broken by hashing that round's joint randomness with each player's public key, lowest
+hash wins: a coin flip no player can steer and anyone can recompute. A replay
 viewer animates each game from the verifier's output, shows chat and injection attempts with their
 effect, and stamps CAUGHT on cheaters.
 
