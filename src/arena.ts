@@ -33,7 +33,10 @@ export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs 
     const log = [...new Map(done.flatMap(d => d.events).map(e => [e.id, e])).values()]
     // Plaintext for the demo only: the public log stays ciphertext. Each line is what its reader decrypted.
     const chat = done.flatMap(d => d.heard).sort((a, b) => a.round - b.round)
-    return { log, config, keys, chat, result: verify(log, config) }
+    // Events the relays refused for a bad signature: they never reach the log, so the viewer learns of them here.
+    const forged = [...new Map(relays.flatMap(r => r.forged()).map(e => [e.id, e])).values()]
+      .map(e => ({ round: Number(e.tags?.find(t => t[0] === 'r')?.[1]), as: e.pubkey }))
+    return { log, config, keys, chat, forged, result: verify(log, config) }
   } finally {
     await Promise.all(relays.map(r => r.close()))
   }
@@ -48,7 +51,18 @@ export async function aiGame(keys: Keys, { rounds = 12, waitMs = 15_000 } = {}) 
   const labels = [...MODELS.map(modelName), 'Injector bot']
   const game = await runArena(players, { rounds, timeoutMs: 90_000, settleMs: 300 })
   const names = Object.fromEntries(game.keys.map((k, i) => [k, labels[i]]))
-  return { ...game, names, stats, replay: { ...game.result, names, chat: game.chat } }
+  return { ...game, names, stats, replay: { ...game.result, names, chat: game.chat, forged: game.forged } }
+}
+
+/** A quick bot game, no requests. With `cheat`, the Cheater bot runs that attack in round 3. */
+export async function botGame(cheat: Attack['kind'] | null, rounds = 12) {
+  const labels = ['Bot 1', 'Gullible bot', 'Injector bot', cheat ? 'Cheater bot' : 'Bot 4']
+  const game = await runArena([scripted, gullible, injector, scripted], {
+    rounds, timeoutMs: cheat ? 5000 : 30_000, settleMs: 300,
+    attacks: cheat ? { 3: { kind: cheat, round: 3 } } : {},
+  })
+  const names = Object.fromEntries(game.keys.map((k, i) => [k, labels[i]]))
+  return { ...game, names, stats: [] as Stats[], replay: { ...game.result, names, chat: game.chat, forged: game.forged } }
 }
 
 /**
@@ -65,15 +79,7 @@ if (import.meta.main) {
   if (ai) process.loadEnvFile()
   const { log, config, names, chat, result, replay, stats } = ai
     ? await aiGame(keysOf(process.env.OPENROUTER_API_KEY), { rounds, waitMs: demo ? 15_000 : 60_000 })
-    : await (async () => {
-      const labels = ['Bot 1', 'Gullible bot', 'Injector bot', cheat ? 'Cheater bot' : 'Bot 4']
-      const game = await runArena([scripted, gullible, injector, scripted], {
-        rounds, timeoutMs: cheat ? 5000 : 30_000, settleMs: 300,
-        attacks: cheat ? { 3: { kind: cheat, round: 3 } } : {},
-      })
-      const names = Object.fromEntries(game.keys.map((k, i) => [k, labels[i]]))
-      return { ...game, names, stats: [], replay: { ...game.result, names, chat: game.chat } }
-    })()
+    : await botGame(cheat, rounds)
   mkdirSync('out', { recursive: true })
   writeFileSync('out/log.json', JSON.stringify({ config, log }))
   writeFileSync('viewer/replay.json', JSON.stringify(replay))

@@ -9,7 +9,8 @@ import type { Result } from './verify.ts'
 import type { Strategy, Talk } from './bots.ts'
 
 /** Red team: this player cheats in one round. Honest players never set it. */
-export type Attack = { kind: 'equivocate' | 'change-move' | 'illegal' | 'lie-state' | 'withhold' | 'forge', round: number }
+export const ATTACKS = ['equivocate', 'change-move', 'illegal', 'lie-state', 'withhold', 'forge'] as const
+export type Attack = { kind: typeof ATTACKS[number], round: number }
 
 export type Heard = { round: number, from: string, to: string, text: string }
 

@@ -27,6 +27,7 @@ export async function startRelay({ port, fault }: { port: number, fault?: Fault 
   // ponytail: unbounded in-memory store, fine for one game; cap it if a relay ever outlives a demo.
   const store = new Map<string, Event>()
   const subs = new Map<WebSocket, Map<string, Filter[]>>()
+  const forged = new Map<string, Event>() // refused for a bad signature, kept so a demo can show them
   const wss = new WebSocketServer({ port, host: '127.0.0.1' })
   await new Promise((ok, no) => { wss.once('listening', ok); wss.once('error', no) })
 
@@ -41,7 +42,10 @@ export async function startRelay({ port, fault }: { port: number, fault?: Fault 
   }
 
   function onEvent(ws: WebSocket, e: Event) {
-    if (!verifyEvent(e)) return send(ws, 'OK', e.id, false, 'invalid: bad signature')
+    if (!verifyEvent(e)) {
+      if (typeof e?.id === 'string' && forged.size < 100) forged.set(e.id, e)
+      return send(ws, 'OK', e?.id, false, 'invalid: bad signature')
+    }
     const verdict = fault?.(e) ?? 'pass'
     send(ws, 'OK', e.id, true, '')
     if (verdict === 'pass') publish(e)
@@ -79,6 +83,7 @@ export async function startRelay({ port, fault }: { port: number, fault?: Fault 
 
   return {
     url: `ws://127.0.0.1:${(wss.address() as { port: number }).port}`,
+    forged: () => [...forged.values()],
     close: () => new Promise<void>((ok, no) => {
       for (const ws of wss.clients) ws.terminate()
       wss.close(err => (err ? no(err) : ok()))

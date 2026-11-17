@@ -4,21 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>No Referee</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/Monocraft.ttf" as="font" type="font/ttf" crossorigin>
 <style>
+  /* Monocraft by Idrees Hassan, a free Minecraft-style font, SIL Open Font License 1.1 (fonts/OFL.txt). */
+  @font-face { font-family: Monocraft; src: url(fonts/Monocraft.ttf) format("truetype"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: Monocraft; src: url(fonts/Monocraft-Bold.ttf) format("truetype"); font-weight: 700; font-display: swap; }
   :root {
     --crimson: #c52f2c; --oxblood: #6f1519; --mustard: #e0a63a; --bone: #f2dfb6; --soot: #1a1310;
     --sand: #d9b56a; --sand2: #cda75b;
     --ink: #10141f; --chrome: #ece9d8; --line: #7f9db9; --title: #2a63d4; --title2: #1946b3; --bar: #2453c4; --bar2: #1a3f9e;
-    --pixel: "Pixelify Sans", "Lucida Console", monospace; --mono: VT323, Consolas, monospace;
+    --pixel: Monocraft, "Lucida Console", monospace; --mono: Monocraft, Consolas, monospace;
     --poster: var(--pixel);
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 -.12'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   * { box-sizing: border-box; }
   html { background: #3b8fe3; }
   body { margin: 0; min-height: 100dvh; padding-bottom: 46px; color: var(--ink); font: 16px/1.45 var(--pixel); font-feature-settings: "liga" 0, "clig" 0; overflow-x: hidden; }
-  /* Pixelify Sans draws "fi" as a broken ligature, and the font shorthand would turn it back on. */
+  /* No ligatures: Monocraft has coding ligatures, and the font shorthand would turn them back on. */
   *, *::before, *::after { font-feature-settings: "liga" 0, "clig" 0 !important; }
   [hidden] { display: none !important; }
   #wall { position: fixed; inset: 0; z-index: -1; width: 100vw; height: 100vh; object-fit: cover; image-rendering: pixelated; }
@@ -177,7 +179,7 @@
   #notice { margin: 12px 0 0; padding: 10px 14px; border-left: 6px solid var(--mustard); background: #1a1310d9; }
 
   /* Setup wizard */
-  #brief { position: fixed; z-index: 80; left: 50%; top: 50%; width: min(900px, calc(100vw - 24px)); max-height: calc(100dvh - 70px); display: flex; flex-direction: column; transform: translate(-50%, calc(-50% - 20px)); }
+  #brief, #cheat { position: fixed; z-index: 80; left: 50%; top: 50%; width: min(900px, calc(100vw - 24px)); max-height: calc(100dvh - 70px); display: flex; flex-direction: column; transform: translate(-50%, calc(-50% - 20px)); }
   .wiz { display: grid; grid-template-columns: 180px minmax(0, 1fr); flex: 1; min-height: 0; background: #fff; }
   .wiz-side { display: grid; align-content: start; justify-items: center; gap: 14px; padding: 20px 12px; color: #fff; background: linear-gradient(#1f5fc4, #3b8fe3 58%, #6cb847 58%, #3e7f2a); }
   #arena { position: relative; }
@@ -232,12 +234,25 @@
   .verdict.bad { color: #fff; background: #b3121d; animation: thud .35s steps(3); }
   @keyframes thud { from { transform: scale(1.4) rotate(-3deg); } }
 
-  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px; }
+  .choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 8px; }
   .choice { display: grid; gap: 6px; padding: 18px; font: inherit; text-align: left; border: 3px solid var(--ink); border-radius: 0; box-shadow: 4px 4px 0 var(--ink); }
   .choice b { font: 700 26px/1 var(--pixel); }
   .choice span { font: 400 16px/1.4 var(--pixel); }
   .choice.live { color: #fff; background: var(--crimson); }
   .choice.saved { color: var(--ink); background: #fff36b; }
+
+  #cheat { width: min(860px, calc(100vw - 24px)); }
+  .cheat-body { flex: 1; min-height: 0; overflow: auto; padding: 16px 20px; color: var(--ink); background: #fff; }
+  .cheat-body p { max-width: 66ch; margin: 0 0 12px; font-size: 17px; }
+  .attacks { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+  .attack { position: relative; display: grid; gap: 4px; align-content: start; padding: 12px 12px 12px 38px; background: #f4f2e8; border: 2px solid #c9c5b3; border-radius: 4px; cursor: pointer; }
+  .attack input { position: absolute; left: 12px; top: 14px; width: 16px; height: 16px; margin: 0; accent-color: var(--crimson); }
+  .attack b { font: 700 19px/1.1 var(--pixel); }
+  .attack span { font-size: 15px; line-height: 1.35; }
+  .attack i { font-style: normal; font-size: 14px; line-height: 1.35; color: #1f6b33; }
+  .attack:has(input:checked) { background: #fff; border-color: var(--crimson); box-shadow: 3px 3px 0 var(--crimson); }
+  .attack:has(input:focus-visible) { outline: 3px solid var(--title); outline-offset: 2px; }
+  .choice.cheat { color: #fff; background: var(--soot); }
 
   /* Taskbar and menu */
   #taskbar { position: fixed; z-index: 100; left: 0; right: 0; bottom: 0; height: 42px; display: flex; align-items: center; gap: 8px; background: linear-gradient(#3c74e0, var(--bar) 15%, var(--bar2)); border-top: 2px solid #5f93f0; }
@@ -266,12 +281,13 @@
   @media (min-width: 901px) {
     body { padding-bottom: 42px; }
     #desk { height: calc(100dvh - 42px); }
+    #icons { max-height: calc(100dvh - 70px); overflow-y: auto; scrollbar-width: none; }
     #arena { display: flex; flex-direction: column; height: 100%; min-height: 0; }
     #arena .client { flex: 1; min-height: 0; }
     #arena main { --fit: calc((100dvh - 290px) * 1000 / 860); height: 100%; max-width: none; grid-template-columns: minmax(0, min(820px, var(--fit))) minmax(260px, 400px); justify-content: center; }
     #arena main > section, #arena aside { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
     #board { width: min(100%, var(--fit)); }
-    #brief { max-height: calc(100dvh - 60px); }
+    #brief, #cheat { max-height: calc(100dvh - 60px); }
   }
   @media (min-width: 901px) and (max-height: 720px) {
     #arena main { --fit: calc((100dvh - 250px) * 1000 / 860); padding: 10px 16px 12px; gap: 16px; }
@@ -284,7 +300,7 @@
     #icons { position: static; grid-auto-flow: column; grid-auto-columns: 82px; overflow-x: auto; padding-bottom: 4px; }
     .icon svg { width: 36px; height: 36px; }
     .win { translate: none; }
-    #brief { inset: 8px 8px 50px; width: auto; max-height: none; transform: none; }
+    #brief, #cheat { inset: 8px 8px 50px; width: auto; max-height: none; transform: none; }
     .wiz { grid-template-columns: minmax(0, 1fr); }
     .wiz-side { display: none; }
     .seal, .choices { grid-template-columns: minmax(0, 1fr); }
@@ -308,6 +324,7 @@
     <button class="icon" data-icon="swords" data-open="arena"><span>Arena</span></button>
     <button class="icon" data-icon="flame" data-act="live"><span>Start live game</span></button>
     <button class="icon" data-icon="disk" data-act="saved"><span>Saved game</span></button>
+    <button class="icon" data-icon="lens" data-open="cheat"><span>Catch a cheater</span></button>
     <a class="icon" data-icon="doc" href="https://github.com/lmaomaidah/no-referee/blob/main/docs/REPORT.pdf" target="_blank" rel="noopener"><span>Report.pdf</span></a>
     <a class="icon" data-icon="folder" href="https://github.com/lmaomaidah/no-referee" target="_blank" rel="noopener"><span>Source code</span></a>
   </nav>
@@ -319,6 +336,7 @@
       <button data-open="brief">How it works</button>
       <button data-act="tour">Show me around</button>
       <button data-act="saved">Watch saved game</button>
+      <button data-open="cheat">Catch a cheater</button>
       <button id="go-live" data-act="live">Start a live game</button>
       <span id="round-label" aria-live="polite"></span>
     </div>
@@ -333,7 +351,7 @@
             <div id="banner" hidden></div>
             <div id="caption" aria-live="polite" hidden></div>
             <div id="live" hidden aria-live="polite">
-              <b>Live game running</b>
+              <b id="live-title">Live game running</b>
               <p id="live-text">Three AI models are playing right now on our server. Every move is sealed and signed.</p>
               <div class="bar" aria-hidden="true"></div>
               <p id="live-time">0:00 of about 3:00</p>
@@ -423,6 +441,7 @@
           </div>
         </div>
         <p class="small">Each move is also signed with the fighter's private key, so nobody can fake someone else's move. Cheaters are caught with proof anyone can check.</p>
+        <p><button class="btn main" data-open="cheat">Try it on a real cheater</button></p>
       </div>
       <div class="page" data-step="Fake orders" hidden>
         <h3>The trick: fake orders</h3>
@@ -435,6 +454,7 @@
         <div class="choices">
           <button class="choice live" data-act="live"><b>Start a live game</b><span>Real AIs play right now. Takes about 3 minutes, and everyone on the site watches the same game.</span></button>
           <button class="choice saved" data-act="saved"><b>Watch a saved game</b><span>A real AI game we recorded. Starts straight away.</span></button>
+          <button class="choice cheat" data-open="cheat"><b>Catch a cheater</b><span>Pick a way to cheat and watch the maths catch it. About 10 seconds.</span></button>
         </div>
         <p class="small">After that, a short tour shows you around the screen. You can reopen this wizard from the How it works icon.</p>
       </div>
@@ -448,6 +468,23 @@
   </div>
 </section>
 
+<section class="win" id="cheat" data-name="Catch a cheater" aria-labelledby="cheat-title" hidden>
+  <div class="title"><span data-icon="lens"></span><h2 id="cheat-title">Catch a cheater</h2>
+    <button class="tb close" data-close aria-label="Close">x</button></div>
+  <div class="cheat-body">
+    <p>Pick a way to cheat. Our server plays a quick game where the Cheater bot tries it in round 3, and you watch what happens. It takes about 10 seconds and uses no AI.</p>
+    <div class="attacks" role="radiogroup" aria-label="Way to cheat">
+      <label class="attack"><input type="radio" name="attack" value="equivocate" checked><b>Two-faced</b><span>Sends one move to one server and a different move to the other.</span><i>Defence: two signed moves for the same round are proof.</i></label>
+      <label class="attack"><input type="radio" name="attack" value="change-move"><b>Swap after peeking</b><span>Seals one move, then opens a different one once it has seen everyone else's.</span><i>Defence: the opened move doesn't match the seal.</i></label>
+      <label class="attack"><input type="radio" name="attack" value="illegal"><b>Break the rules</b><span>Plays a move the rules don't allow.</span><i>Defence: everyone replays the rules and spots it.</i></label>
+      <label class="attack"><input type="radio" name="attack" value="lie-state"><b>Lie about the board</b><span>Claims the game is in a different state than everyone else sees.</span><i>Defence: each sealed move carries a fingerprint of the board.</i></label>
+      <label class="attack"><input type="radio" name="attack" value="withhold"><b>Rage quit</b><span>Stops answering partway through, to stall the game.</span><i>Defence: the others vote it out and rebuild its secret, so the game goes on.</i></label>
+      <label class="attack"><input type="radio" name="attack" value="forge"><b>Impersonate someone</b><span>Signs a move as another player, without their key.</span><i>Defence: the signature fails, so the servers throw it away.</i></label>
+    </div>
+  </div>
+  <div class="wiz-nav"><span></span><button class="btn main" id="cheat-run">Run the game</button><button class="btn" data-close>Close</button></div>
+</section>
+
 <footer id="taskbar">
   <button id="start-btn" aria-haspopup="true" aria-expanded="false"><span data-icon="flame"></span>Play</button>
   <div id="tasks"></div>
@@ -457,6 +494,7 @@
   <div class="head"><span data-icon="flame"></span>No Referee</div>
   <button data-act="live" data-icon="flame">Start a live game</button>
   <button data-act="saved" data-icon="disk">Watch saved game</button>
+  <button data-open="cheat" data-icon="lens">Catch a cheater</button>
   <button data-open="brief" data-icon="help">How it works</button>
   <button data-act="tour" data-icon="swords">Show me around</button>
   <a data-icon="doc" href="https://github.com/lmaomaidah/no-referee/blob/main/docs/REPORT.pdf" target="_blank" rel="noopener">Technical report</a>
@@ -746,7 +784,7 @@ async function playRound(i) {
   $('banner').hidden = true
   drawBoard(view); drawUnits(view, caught); drawTributes(view, caught)
   $('timeline').value = at
-  $('cheats').replaceChildren(...(caught.size ? [] : [el('p', 'quiet', 'None yet.')]))
+  drawCheats(round.round - 1)
   $('round-label').textContent = round.round === 0 ? 'Spawn' : `Round ${round.round}/${game.rounds.at(-1).round}`
 
   if (round.round === 0) { say('The tributes take their places'); await wait(1500); if (live()) draw(false); return }
@@ -827,7 +865,31 @@ async function playRound(i) {
     $('fx').append(st)
     await wait(3000); if (!live()) return
   }
+  for (const f of (game.forged ?? []).filter(f => f.round === round.round)) {
+    const st = el('div', 'stamp soft')
+    st.append(el('b', '', 'Rejected'), el('div', '', `A move signed as ${nameOf(f.as)} had a fake signature. The relays threw it away.`))
+    $('caption').hidden = true
+    $('fx').append(st)
+    await wait(3000); if (!live()) return
+  }
   draw(false)
+}
+
+/** The Cheats caught panel: every cheat and forgery up to and including round `upTo`. */
+function drawCheats(upTo) {
+  const boxes = (game.cheats ?? []).filter(c => c.round <= upTo).map(c => {
+    const box = el('div', c.type === 'absent' ? 'cheat soft' : 'cheat')
+    box.append(el('strong', '', `Round ${c.round}: ${nameOf(c.pubkey)}`), el('div', '', SAY[c.type] ?? c.type),
+      el('code', '', `Proof: ${c.evidence.map(short).join(', ')}`))
+    return box
+  })
+  for (const f of (game.forged ?? []).filter(f => f.round <= upTo)) {
+    const box = el('div', 'cheat soft')
+    box.append(el('strong', '', `Round ${f.round}: forged move rejected`),
+      el('div', '', `Someone signed a move as ${nameOf(f.as)} without their key. The signature failed, so the relays threw it away. A forgery has no valid key behind it, so nobody is blamed.`))
+    boxes.push(box)
+  }
+  $('cheats').replaceChildren(...(boxes.length ? boxes : [el('p', 'quiet', 'None yet.')]))
 }
 
 function draw() {
@@ -846,12 +908,7 @@ function draw() {
 
   drawTributes(s, caught, gone)
 
-  $('cheats').replaceChildren(...(seen.length ? seen.map(c => {
-    const box = el('div', c.type === 'absent' ? 'cheat soft' : 'cheat')
-    box.append(el('strong', '', `Round ${c.round}: ${nameOf(c.pubkey)}`), el('div', '', SAY[c.type] ?? c.type),
-      el('code', '', `Proof: ${c.evidence.map(short).join(', ')}`))
-    return box
-  }) : [el('p', 'quiet', 'None yet.')]))
+  drawCheats(round.round)
 
   const chat = (game.chat ?? []).filter(m => m.round <= round.round).slice(-10)
   $('chat').hidden = !showChat
@@ -906,14 +963,14 @@ function start(data) {
   for (const k of keys) units.set(k, makeUnit(k))
   const last = game.rounds.length - 1
   $('timeline').max = last
-  for (const c of game.cheats ?? []) {
+  for (const c of [...(game.cheats ?? []), ...(game.forged ?? [])]) {
     const i = game.rounds.findIndex(r => r.round === c.round)
     if (i < 0) continue
     const m = el('span', 'mark'); m.title = `Cheat in round ${c.round}`
     m.style.left = `${(i / Math.max(last, 1)) * 100}%`
     $('timeline-wrap').append(m)
   }
-  const bad = game.rejected ?? 0
+  const bad = (game.rejected ?? 0) + (game.forged?.length ?? 0)
   $('rejected').textContent = `${bad} invalid ${bad === 1 ? 'event' : 'events'} thrown away.`
   if (params.has('round')) playRound(Number(params.get('round'))); else go(0)
 }
@@ -950,6 +1007,7 @@ const ICONS = {
   robot: pixels(['.....kk.....', '.....yy.....', '..kkkkkkkk..', '.kssssssssk.', '.ksbbssbbsk.', '.ksbbssbbsk.', '.kssssssssk.', '.ksskkkkssk.', '.kssssssssk.', '..kkkkkkkk..', '..ks.kk.sk..', '..kk....kk..']),
   scroll: pixels(['.kkkkkkkkk..', 'kppppppppppk', '.kprrrrrpk..', '.kppppppppk.', '.kprrrrppk..', '.kppppppppk.', '.kprrrrrpk..', '.kppppppppk.', '.kprrrpppk..', '.kppppppppk.', 'kppppppppppk', '.kkkkkkkkk..']),
   arrows: pixels(['.....kk.....', '....kbbk....', '...kbbbbk...', '.....bb.....', '..k..bb..k..', '.kb..bb..bk.', 'kbbbbbbbbbbk', '.kb..bb..bk.', '..k..bb..k..', '.....bb.....', '...kbbbbk...', '....kbbk....']),
+  lens: pixels(['..kkkk......', '.kwwwwk.....', 'kwbbwwwk....', 'kwbwwwwk....', 'kwwwwwwk....', 'kwwwwwwk....', '.kwwwwk.....', '..kkkkkk....', '......kdk...', '.......kdk..', '........kdk.', '.........kk.']),
   talk: pixels(['............', '.kkkkkkkkkk.', 'kwwwwwwwwwwk', 'kwkkwkkwkkwk', 'kwwwwwwwwwwk', 'kwkkkwkkkwwk', 'kwwwwwwwwwwk', '.kkkwwkkkkk.', '...kwk......', '...kk.......', '............', '............']),
   fist: SPRITES.fist, chest: SPRITES.shield, bush: $('bush').innerHTML,
 }
@@ -1095,6 +1153,55 @@ async function loadSaved(why = '') {
   note('No saved game was found.')
 }
 
+/** POSTs to the game server and hands each line of its newline-separated JSON to onMsg. */
+async function readGame(url, onMsg) {
+  const res = await fetch(url, { method: 'POST' })
+  if (!res.ok || !res.body) throw new Error(`the server answered ${res.status}`)
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
+  let buf = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) return
+    buf += value
+    for (let i = buf.indexOf('\n'); i >= 0; i = buf.indexOf('\n')) { onMsg(JSON.parse(buf.slice(0, i))); buf = buf.slice(i + 1) }
+  }
+}
+const clockOf = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+/** Shows the waiting screen over the board; `est` is the expected seconds. Returns a function that stops its timer. */
+function waiting(title, text, est, onScreen = () => true) {
+  const bar = $('live').querySelector('.bar'), t0 = Date.now()
+  const tick = () => {
+    if (!onScreen()) return
+    const s = Math.round((Date.now() - t0) / 1000)
+    $('live-title').textContent = title
+    $('live-text').textContent = text()
+    if (bar.children.length !== 20) bar.replaceChildren(...Array.from({ length: 20 }, () => el('i')))
+    $('live-time').textContent = `${clockOf(s)} of about ${clockOf(est)}`
+    ;[...bar.children].forEach((i, n) => i.classList.toggle('on', n < Math.min(19, s / est * 20)))
+  }
+  $('live').hidden = false
+  tick()
+  const id = setInterval(tick, 1000)
+  return () => clearInterval(id)
+}
+
+async function runCheat() {
+  const pick = document.querySelector('input[name="attack"]:checked'), label = pick.closest('.attack').querySelector('b').textContent
+  closeWin('cheat'); openWin('arena'); stop(); note('')
+  liveOnScreen = false
+  const done = waiting('Catching a cheater', () => `The Cheater bot is about to try "${label}" in round 3. Every move is sealed and signed.`, 12)
+  let result = null, reason = ''
+  try { await readGame(`api/game?cheat=${encodeURIComponent(pick.value)}`, m => { if (m.replay) result = m }) }
+  catch (e) { reason = e.message }
+  done()
+  $('live').hidden = true
+  if (!result) return note(`The cheat game didn't run (${reason || 'no result'}). Try again in a moment.`)
+  start(result.replay)
+  note(`In round 3 the Cheater bot tries "${label}". Watch for the stamp, then look under Cheats caught for the proof. This is a quick bot game with no AI.`)
+  go(2); toggle()
+}
+$('cheat-run').onclick = runCheat
+
 async function goLive() {
   openWin('arena')
   stop()
@@ -1102,38 +1209,19 @@ async function goLive() {
   if (liveRunning) { $('live').hidden = false; return }
   liveRunning = true
   note('')
-  const bar = $('live').querySelector('.bar')
-  bar.replaceChildren(...Array.from({ length: 20 }, () => el('i')))
-  $('live-text').textContent = 'Three AI models are playing right now on our server. Every move is sealed and signed.'
-  $('live').hidden = false
-  const t0 = Date.now()
-  const timer = setInterval(() => {
-    const s = Math.round((Date.now() - t0) / 1000)
-    $('live-time').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} of about 3:00`
-    bar.querySelectorAll('i').forEach((i, n) => i.classList.toggle('on', n < Math.min(19, s / 9)))
-  }, 1000)
+  let text = 'Three AI models are playing right now on our server. Every move is sealed and signed.'
+  const stopTimer = waiting('Live game running', () => text, 180, () => liveOnScreen)
   let result = null, reason = 'The live game stopped before it finished.'
   try {
-    const res = await fetch('api/game', { method: 'POST' })
-    if (!res.ok || !res.body) throw new Error(`the server answered ${res.status}`)
-    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader()
-    let buf = ''
-    for (;;) {
-      const { value, done } = await reader.read()
-      if (done) break
-      buf += value
-      for (let i = buf.indexOf('\n'); i >= 0; i = buf.indexOf('\n')) {
-        const m = JSON.parse(buf.slice(0, i))
-        buf = buf.slice(i + 1)
-        if (m.joined) $('live-text').textContent = 'Someone else already started a game, so you are watching theirs. Every move is sealed and signed.'
-        if (m.replay) result = m
-        if (m.demo) reason = m.reason
-      }
-    }
+    await readGame('api/game', m => {
+      if (m.joined) { text = 'Someone else already started a game, so you are watching theirs. Every move is sealed and signed.'; $('live-text').textContent = text }
+      if (m.replay) result = m
+      if (m.demo) reason = m.reason
+    })
   } catch (e) {
     reason = `Couldn't reach the game server (${e.message}).`
   }
-  clearInterval(timer)
+  stopTimer()
   liveRunning = false
   $('live').hidden = true
   if (!liveOnScreen) {

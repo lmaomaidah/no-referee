@@ -42,9 +42,10 @@ for (const [kind, type] of caught) {
 }
 
 test('forging another player move changes nothing and nobody is accused', async () => {
-  const { result } = await runArena(bots, { ...red, attacks: { 3: { kind: 'forge', round: 2 } } })
+  const { result, forged } = await runArena(bots, { ...red, attacks: { 3: { kind: 'forge', round: 2 } } })
   assert.equal(result.status, 'finished')
   assert.deepEqual(result.cheats, [])
+  assert.ok(forged.length > 0 && forged.every(f => f.round === 2), 'the relays report the forgery they refused')
 })
 
 test('a relay that drops most events cannot break the game', async () => {

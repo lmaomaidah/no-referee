@@ -1,6 +1,17 @@
-import { aiGame, modelName } from '../src/arena.ts'
+import { aiGame, botGame, modelName } from '../src/arena.ts'
 import { findWorkingKey, keysOf } from '../src/llm.ts'
 import { MODELS } from '../src/models.ts'
+import { ATTACKS } from '../src/player.ts'
+import type { Attack } from '../src/player.ts'
+
+const ndjson = { 'content-type': 'application/x-ndjson', 'cache-control': 'no-store' }
+
+/** POST /api/game?cheat=<attack>: a 7 to 17 s bot game where the Cheater bot runs that attack. No API keys used. */
+async function cheatGame(cheat: string) {
+  if (!(ATTACKS as readonly string[]).includes(cheat)) return new Response('unknown attack\n', { status: 400 })
+  const game = await botGame(cheat as Attack['kind'])
+  return new Response(JSON.stringify({ replay: game.replay, stats: [] }) + '\n', { headers: ndjson })
+}
 
 /**
  * POST /api/game runs one live AI game and streams newline-separated JSON:
@@ -18,7 +29,9 @@ async function play() {
   return { replay: game.replay, stats: game.stats.map((s, i) => ({ model: modelName(MODELS[i]), ...s })) }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const cheat = new URL(request.url).searchParams.get('cheat')
+  if (cheat !== null) return cheatGame(cheat)
   const joined = current !== null
   const game = current ??= play().finally(() => { current = null })
   const started = Date.now(), enc = new TextEncoder()
@@ -37,5 +50,5 @@ export async function POST() {
       }
     },
   })
-  return new Response(body, { headers: { 'content-type': 'application/x-ndjson', 'cache-control': 'no-store' } })
+  return new Response(body, { headers: ndjson })
 }
