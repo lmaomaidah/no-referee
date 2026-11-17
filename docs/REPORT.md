@@ -79,7 +79,8 @@ fake identities, since the roster is fixed before the game starts.
 | Strategies | `src/bots.ts`, `src/llm.ts` | Scripted bots and AI agents choose moves | Untrusted input to the player |
 | Relay | `src/relay.ts` | Our own Nostr relay (WebSocket, NIP-01) with fault injection | Untrusted |
 | Arena | `src/arena.ts` | Starts relays and players, saves the log and the replay | Demo harness |
-| Viewer | `viewer/index.html` | Animates a verified game in the browser | Display only |
+| Game server | `api/game.ts` | Web endpoint: runs a live AI game or a cheat game and streams the result | Holds the API keys |
+| Website | `viewer/index.html` | Retro desktop interface: setup wizard, guided tour, sealed-envelope demo, cheat picker, replay | Display only, untrusted input |
 | Injection experiment | `src/injection.ts` | Single-turn prompt-injection trials against hosted models | Evaluation |
 
 The verifier and the live players share the same replay code, so play and verification can't
@@ -87,21 +88,32 @@ disagree. The AI model never touches keys or events: it only returns a number fr
 
 ### 4.2 Deployment view
 
+The project is live at https://no-referee.vercel.app, hosted free on Vercel.
+
 ```
-+---------------- one laptop (demo) ----------------+          +------------------+
-|                                                   |  HTTPS   | OpenRouter chat  |
-|  Player A ---+                     +--- LLM call -+--------->| API (hosted,     |
-|  Player B ---+-- WebSocket --> Relay 1 (faulty?)  |          | untrusted)       |
-|  Player C ---+-- WebSocket --> Relay 2            |          +------------------+
-|  Player D ---+                                    |
-|        |                                          |
-|        v  signed event log (out/log.json)         |
-|     Verifier --> viewer/replay.json --> Browser   |
-+---------------------------------------------------+
+ Visitor's browser                 Vercel                                  OpenRouter
++-----------------+  HTTPS   +--------------------------------------+    +-------------+
+| Website         |--------->| Static files: viewer/                |    | Free AI     |
+| (wizard, tour,  |  GET     |                                      |    | models      |
+|  replay, demo)  |          | Function api/game.ts (up to 300 s):  |    | (untrusted) |
+|                 |  POST    |   Player A -+                        |    |             |
+|                 |--------->|   Player B -+- WebSocket -> Relay 1  |    |             |
+|                 |<---------|   Player C -+- WebSocket -> Relay 2  |    |             |
+|                 |  stream  |   Player D -+                        |    |             |
+| keys never here |  of JSON |   AI players --- HTTPS + API key ----+--->|             |
++-----------------+          |   Verifier -> replay                 |    +-------------+
+                             | Secret env var: OPENROUTER_KEYS      |
+                             +--------------------------------------+
 ```
 
-Every player publishes to every relay. The relay is a plain NIP-01 WebSocket endpoint
-(`["EVENT", ...]`, `["REQ", ...]`) so any Nostr client could talk to it.
+`POST /api/game` runs a live AI game (about 3 minutes) and streams `{seconds}` progress lines,
+then `{replay, stats}`. `POST /api/game?cheat=<attack>` runs a 7 to 17 second bot game in which
+one player attacks, and needs no API key. Only the six known attack names are accepted. Inside the
+function, the players and our two relays talk over local WebSockets exactly as in the command-line
+version, and the verifier recomputes the result from the signed log before anything is sent to the
+browser. Every player publishes to every relay. The relay is a plain NIP-01 WebSocket endpoint
+(`["EVENT", ...]`, `["REQ", ...]`) so any Nostr client could talk to it. The same code also runs
+from the command line on one laptop (`node src/arena.ts`).
 
 ### 4.3 One round, as a sequence
 
@@ -130,6 +142,7 @@ Every player publishes to every relay. The relay is a plain NIP-01 WebSocket end
 | Shamir share | Decrypted by its holder | NIP-44 ciphertext in the setup event, plaintext only in a recover vote | Its holder, then everyone if a recover vote is cast |
 | Chat | Plaintext for sender and recipient | NIP-44 ciphertext | Sender and recipient |
 | Private key | Memory only | Never sent | Its owner |
+| OpenRouter API key | Server memory, from an encrypted Vercel variable | Sent only to OpenRouter over HTTPS, never to the browser or the log | The server |
 
 How chat and shares are encrypted (NIP-44): two players each combine their own private key with
 the other's public key and get the same secret key, without ever sending it. Messages are
@@ -218,8 +231,15 @@ encrypted to each holder inside the signed setup event.
 
 **Storage.** Private keys, seeds and decrypted shares live only in process memory and are never
 written to disk. The saved log and the replay file contain public keys, signatures, ciphertext and
-revealed moves only. The one long-lived secret is the OpenRouter API key, kept in `.env`, which is
-listed in `.gitignore` and never committed.
+revealed moves only.
+
+**API keys.** The only long-lived secrets are OpenRouter API keys. Locally they sit in `.env`, which
+is listed in `.gitignore` and never committed. On the website they are stored in one Vercel
+environment variable, `OPENROUTER_KEYS`, marked sensitive: Vercel encrypts it and nobody, including
+us, can read it back from the dashboard. It is never sent to the browser. The keys are tried in
+order: when one hits its free daily limit, every AI player in the game moves on to the next. Before
+a game starts, one tiny request checks that some key still works; if none does, the site plays a
+saved game instead of a game with no real AI. To rotate a key, we replace the variable and redeploy.
 
 **Revocation and rotation.** Keys are per game, so they are discarded when the game ends and a new
 game gets new keys. Inside a game, a key that stops participating is effectively revoked by a
@@ -260,7 +280,8 @@ player acted, but not what they chose, because the move is sealed first.
 ## 9. Implementation
 
 TypeScript on Node 24 using `nostr-tools`, `@noble/hashes` and `ws`. We wrote a small NIP-01
-relay so we could inject faults. Games run on one laptop. Agents are hosted models on OpenRouter,
+relay so we could inject faults. Games run inside one Vercel function for the website, or on one
+laptop from the command line. Agents are hosted models on OpenRouter,
 reached over its chat API. A model only picks a number from a menu of legal moves, and can add one
 chat line. If a model fails, a scripted bot plays that turn and the failure is counted. The budget
 was $0.
@@ -272,6 +293,22 @@ tie on HP is broken by hashing that round's joint randomness with each player's 
 hash wins: a coin flip no player can steer and anyone can recompute. A replay
 viewer animates each game from the verifier's output, shows chat and injection attempts with their
 effect, and stamps CAUGHT on cheaters.
+
+**The website.** The viewer is a retro desktop: pixel-art icons and wallpaper, draggable windows and
+a taskbar. It is plain HTML, CSS and JavaScript with no framework, and works on phones, where the
+windows stack full width. A first-time visitor is guided in three ways:
+
+- **A six-step setup wizard** explains the game, introduces each player, lists the moves, and ends
+  with a choice of what to watch.
+- **A sealed-envelope demo** inside the wizard makes commitments tangible. The visitor picks a move
+  and seals it, and the browser computes a real SHA-256 commitment with the Web Crypto API. The
+  visitor can then open it honestly, or swap the move first and see the mismatch caught.
+- **A six-stop guided tour** points out the arena, controls, players, cheats, chat and the live game
+  button.
+
+From the site, a visitor can start a live AI game, watch a saved one, or pick one of the six attacks
+in "Catch a cheater" and watch the defence work in a fresh game. Chat written by AI models is
+untrusted input, so the page only ever inserts it as text, never as HTML.
 
 ### 9.1 Implementation hurdles
 
@@ -289,7 +326,16 @@ effect, and stamps CAUGHT on cheaters.
    Each commit now carries a state hash, which exposes a fork in the next round.
 6. **No GPU, small budget.** The laptop can't run local models, so we moved from Ollama to free
    hosted models. Free accounts get 50 requests a day, Gemini's free tier refused our keys, and the
-   Nemotron models often take longer than the demo's 15 s turn limit (see 10.3).
+   Nemotron models often take longer than the demo's 15 s turn limit (see 10.4).
+7. **A 5-minute limit on the free web host.** A Vercel function may run for at most 300 s. A
+   12-round game with a 15 s turn limit takes about 3 minutes, so it fits, and the progress is
+   streamed so the browser doesn't time out waiting.
+8. **No shared memory between servers.** We wanted one game at a time, watched by everyone. Vercel
+   may run several copies of the function, and they share nothing, so the lock only holds within one
+   copy (limitation 10).
+9. **Forgeries were invisible.** A forged move fails its signature check at the relay, so it never
+   reaches the log, and the site had nothing to show. The relays now keep the events they refuse, so
+   the site can show "Rejected" in the round it happened.
 
 ## 10. Security evaluation
 
@@ -307,6 +353,9 @@ effect, and stamps CAUGHT on cheaters.
 | Chat | Text read by an AI | Prompt injection | Menu of legal moves, untrusted label, strict format | Bad moves possible, illegal moves impossible |
 | Model API | Model output | Garbage or illegal replies | Reply must be a menu number; fallback to bot | Counted as fallback |
 | `.env` | API key | Leaked key | `.gitignore`, never logged | Not in repo |
+| `POST /api/game` | Anyone on the internet can call it | Burning the daily API quota | Keys stay on the server; one game at a time per server copy; others watch it | Quota can still run out; the site then plays a saved game |
+| `?cheat=` parameter | Any text | Running unexpected code paths | Only the six known attack names are accepted (`400` otherwise) | Tested |
+| Website | AI chat shown in the page | Script injection through chat | Chat is inserted as text, never as HTML | No HTML from models reaches the page |
 
 ### 10.2 Scripted attacks
 
@@ -321,12 +370,12 @@ repeatable with `npm test`.
 | Lying about the game state | State hash in each commit | Caught as `state-fork`, attacker only |
 | Withholding a reveal | Quorum and Shamir recovery | Removed as `absent`, seed rebuilt |
 | Quitting mid-game | Quorum and Shamir recovery | Removed as `absent`, game finished |
-| Forging another player's move | Signatures | Rejected, nobody blamed |
+| Forging another player's move | Signatures | Rejected by the relays and shown as "Rejected" on the site, nobody blamed |
 | A relay dropping most events | Publishing to all relays, rebroadcasting | Game finished, nobody blamed |
 
 Further tests on hand-built logs confirm that quitting doesn't change round randomness, that
 fewer than `k` votes remove nobody, that a voter signing two different shares is caught, and that
-shuffling or duplicating the log changes nothing. All 33 tests pass.
+shuffling or duplicating the log changes nothing. All 34 tests pass.
 
 ### 10.3 Prompt injection
 
@@ -371,6 +420,7 @@ absolute muppet."
 | Nov 12 demo | 12 | 127 | 19 of 34 | 15 (15 s timeout) | 0 |
 | Nov 17 demo, saved as backup | 12 | 109 | 11 of 23 | 12 (7 daily limit, 5 timeout) | 0 |
 | Nov 17 demo, second key | 13 | 92 | 6 of 18 | 12 (all 15 s timeout) | 0 |
+| Nov 17, on the website (Vercel) | 13 | n/a | 16 of 24 | 8 (15 s timeout) | 0 |
 
 Each game had three free OpenRouter models and the Injector bot. The Nov 12 game took 3 minutes
 9 seconds. In every game the verifier recomputed the winner from the log alone. flint-v1.0 almost
@@ -388,13 +438,15 @@ never misses the limit; the Nemotron models often do.
 | Label chat as untrusted | Stopped all injected hides in our trials | A longer prompt; models may also ignore genuine alliance offers |
 | 15 s model turn limit in the demo | The demo ends on time | Only 6 to 19 of each game's turns were real model moves; 60 s gives more but a slower game |
 | Encrypted chat | Relays can't read it | The demo arena still prints plaintext because it runs every player |
+| Keys only on the server | Visitors never see an API key | Every live game must run on our server, inside its 5-minute limit |
+| One live game at a time | Protects the free daily quota | A visitor who arrives mid-game must wait or watch that game |
 
 ## 11. Limitations
 
 1. **Forgery has no culprit.** A forged event has no valid signature, so there is no key to
    trace. It is rejected and the impersonated player isn't blamed.
-2. **Live forgery stops at our relay.** Forged events never reached players in live games.
-   Rejection by the verifier is tested on hand-built logs.
+2. **Live forgery stops at our relay.** Forged events never reached players in live games. The
+   relays report what they refused, and rejection by the verifier is tested on hand-built logs.
 3. **A bad dealer keeps one bit of bias.** Without Feldman verifiable secret sharing, shares can't
    be checked at setup. A player who dealt bad shares can choose between revealing and withholding
    after seeing the other seeds: one bit of influence on one round, at the cost of being removed.
@@ -409,11 +461,16 @@ never misses the limit; the Nemotron models often do.
    scripted bot.
 9. **The demo chat transcript is not private.** The public log holds only ciphertext, but the arena
    prints plaintext because it runs every player. A real deployment wouldn't.
+10. **The one-game lock is per server copy.** Under heavy traffic Vercel can start a second copy of
+    the function, which would run its own game and use more of the quota. A shared store would fix it.
+11. **Live games are not saved.** A finished live game is shown to the people who were watching, then
+    it is gone. Only the backup game is stored.
 
 ## 12. Changes from the proposal
 
 Local Ollama models became hosted models because the laptop has no GPU. Per-round seed commitments
-became one hash chain per game. Deadlines became quorum votes. See
+became one hash chain per game. Deadlines became quorum votes. The demo moved from one laptop to a
+public website, so classmates can play and attack it themselves. See
 [PROPOSAL.md](PROPOSAL.md) for the full list.
 
 ## 13. Conclusion

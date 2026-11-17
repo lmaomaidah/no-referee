@@ -9,7 +9,7 @@ Information Security course project, due **Nov 30, 2026**.
 
 - **What is this? Read [docs/EXPLAINED.md](docs/EXPLAINED.md).** No technical background needed.
 - **Joining the team? Read [docs/TEAM-GUIDE.md](docs/TEAM-GUIDE.md).**
-- **Live site: https://no-referee.vercel.app** A pixel desktop with a step-by-step guide, a sealed-move demo, and a button that runs a real AI game.
+- **Live site: https://no-referee.vercel.app** A retro desktop with a step-by-step guide, a sealed-move demo, a button that runs a real AI game, and "Catch a cheater", where you pick an attack and watch it get caught.
 - **The technical report:** [docs/REPORT.pdf](docs/REPORT.pdf), built from [docs/REPORT.md](docs/REPORT.md).
 
 ## Run it
