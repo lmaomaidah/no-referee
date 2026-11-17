@@ -9,7 +9,7 @@ Information Security course project, due **Nov 30, 2026**.
 
 - **What is this? Read [docs/EXPLAINED.md](docs/EXPLAINED.md).** No technical background needed.
 - **Joining the team? Read [docs/TEAM-GUIDE.md](docs/TEAM-GUIDE.md).**
-- **The write-up:** [docs/REPORT.md](docs/REPORT.md), a draft we keep editing here.
+- **The technical report:** [docs/REPORT.pdf](docs/REPORT.pdf), built from [docs/REPORT.md](docs/REPORT.md).
 
 ## Run it
 
@@ -24,6 +24,7 @@ node src/arena.ts --demo   # AI game built for the demo: 12 rounds, about 39 of 
 node src/injection.ts      # prompt-injection trials, about 42 requests, needs .env
 node src/injection.ts --report   # print the results so far, no requests
 npm test                   # attack suite and live games, a few minutes
+node docs/build-pdf.ts     # rebuild docs/REPORT.pdf from docs/REPORT.md (needs Chrome or Edge)
 ```
 
 ## Status
