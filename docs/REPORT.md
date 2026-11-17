@@ -1,7 +1,8 @@
 # No Referee: Trustless Hunger Games for AI Agents
 
-Information Security course project report. **Draft.** Sections marked TODO need real
-results before submission. Team members: TODO.
+Information Security course project report, custom topic approved by the instructor.
+
+Team members: Maidah (24i-2116), Alisha (24i-2063), Hani (24i-2113).
 
 ## 1. Abstract
 

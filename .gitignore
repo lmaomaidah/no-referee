@@ -150,6 +150,3 @@ vite.config.ts.timestamp-*
 
 .superpowers/
 viewer/replay.json
-.player-key
-*.key
-game.json

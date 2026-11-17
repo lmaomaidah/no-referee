@@ -28,7 +28,7 @@ npm test                   # attack suite and live games, a few minutes
 
 ## Status
 
-Last updated Nov 12, 2026.
+Last updated Nov 17, 2026.
 
 ### Done
 
@@ -45,17 +45,14 @@ Last updated Nov 12, 2026.
 - [x] Prompt-injection experiment run Nov 17: undefended models obeyed a fake order 3/6, defended 0/11, illegal move 0/18 (`results/injection.jsonl`)
 - [x] Demo mode with a hard time limit per model (`--demo`): a real AI game took 3 min 9 s on Nov 12
 - [x] Encrypted agent chat, trash talk and last words, seen working with real models on Nov 12
-- [x] Full check on Nov 12: type check clean, all 35 tests pass, real AI game verified with 0 cheats, viewer plays it
+- [x] Full check on Nov 17: type check clean, all 33 tests pass, real AI game verified with 0 cheats
+- [x] Backup demo game saved (`viewer/backup-replay.json`): real AI game from Nov 17, 12 rounds, 0 cheats, 29 chat lines
 
 ### Left
 
 | Task | Owner | Notes |
 |---|---|---|
-| Polish the replay viewer | Teammates | Styled version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
-| Reliable model access | Open | See known problems. Consider a longer `--demo` turn limit (now 15 s, `src/arena.ts:54`) |
-| Finish the report | Open | Fill the TODO sections in [docs/REPORT.md](docs/REPORT.md) |
-| Live demo | Everyone | Rehearse with a saved game as backup |
-| Ask the instructor: topic 13 or custom? | Open | Still unanswered in the proposal |
+| Live demo | Everyone | Rehearse. If models fail on the day, open the saved backup game: `npx serve viewer`, then `/?game=backup-replay.json` |
 
 ### Known problems
 
