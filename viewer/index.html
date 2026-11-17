@@ -262,6 +262,23 @@
   #tip .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   #tip span { font-size: 14px; }
 
+  /* Laptop and up: the arena window fills the space above the taskbar, and the board shrinks to fit, so nothing is cut off. */
+  @media (min-width: 901px) {
+    body { padding-bottom: 42px; }
+    #desk { height: calc(100dvh - 42px); }
+    #arena { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+    #arena .client { flex: 1; min-height: 0; }
+    #arena main { --fit: calc((100dvh - 290px) * 1000 / 860); height: 100%; max-width: none; grid-template-columns: minmax(0, min(820px, var(--fit))) minmax(260px, 400px); justify-content: center; }
+    #arena main > section, #arena aside { min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+    #board { width: min(100%, var(--fit)); }
+    #brief { max-height: calc(100dvh - 60px); }
+  }
+  @media (min-width: 901px) and (max-height: 720px) {
+    #arena main { --fit: calc((100dvh - 250px) * 1000 / 860); padding: 10px 16px 12px; gap: 16px; }
+    #timeline-wrap { margin-top: 8px; padding-top: 10px; }
+    .controls button { font-size: 16px; padding: 6px 10px; }
+    #hint { display: none; }
+  }
   @media (max-width: 900px) {
     #desk { grid-template-columns: minmax(0, 1fr); padding: 10px 8px 14px; }
     #icons { position: static; grid-auto-flow: column; grid-auto-columns: 82px; overflow-x: auto; padding-bottom: 4px; }
@@ -1055,9 +1072,17 @@ $('seal-cheat').onclick = () => {
 }
 
 // Games
-function note(text) { $('notice').hidden = !text; $('notice').textContent = text }
+function note(text, button) {
+  $('notice').hidden = !text
+  $('notice').replaceChildren(text ?? '')
+  if (button) { const b = el('button', 'btn main', button.label); b.style.marginLeft = '10px'; b.onclick = button.run; $('notice').append(b) }
+}
+let liveRunning = false, liveOnScreen = false
 async function loadSaved(why = '') {
   openWin('arena')
+  liveOnScreen = false
+  $('live').hidden = true
+  if (liveRunning && !why) why = 'Your live game keeps running in the background. You will get a button here when it is ready.'
   for (const [f, what] of [['backup-replay.json', 'a real AI game recorded on Nov 17, 2026'], ['sample-replay.json', 'a sample game played by bots']]) {
     const res = await fetch(f).catch(() => null)
     if (res?.ok) { start(await res.json()); note(`${why} This is ${what}. Press Play to watch.`.trim()); return }
@@ -1067,10 +1092,11 @@ async function loadSaved(why = '') {
 
 async function goLive() {
   openWin('arena')
-  if ($('go-live').disabled) return
-  const buttons = document.querySelectorAll('[data-act="live"]')
-  buttons.forEach(b => { b.disabled = true })
-  stop(); note('')
+  stop()
+  liveOnScreen = true
+  if (liveRunning) { $('live').hidden = false; return }
+  liveRunning = true
+  note('')
   const bar = $('live').querySelector('.bar')
   bar.replaceChildren(...Array.from({ length: 20 }, () => el('i')))
   $('live-text').textContent = 'Three AI models are playing right now on our server. Every move is sealed and signed.'
@@ -1103,9 +1129,20 @@ async function goLive() {
     reason = `Couldn't reach the game server (${e.message}).`
   }
   clearInterval(timer)
+  liveRunning = false
   $('live').hidden = true
-  buttons.forEach(b => { b.disabled = false })
+  if (!liveOnScreen) {
+    // The viewer switched to the saved game meanwhile: offer the result instead of yanking them away.
+    if (result) note('Your live game has finished.', { label: 'Watch the live game', run: () => showLive(result) })
+    else note(`${reason} The saved game is still playing.`)
+    return
+  }
   if (!result) return loadSaved(`${reason} Here is a saved game instead.`)
+  showLive(result)
+}
+
+function showLive(result) {
+  openWin('arena')
   start(result.replay)
   const calls = result.stats.reduce((n, s) => n + s.calls, 0), real = calls - result.stats.reduce((n, s) => n + s.fallbacks, 0)
   note(`Live game finished. ${real} of ${calls} AI turns were real model moves. When a model took longer than 15 seconds, a simple backup bot moved for it.`)
