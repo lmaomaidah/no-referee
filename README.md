@@ -41,7 +41,8 @@ Last updated Nov 12, 2026.
 - [x] AI players on OpenRouter (`src/llm.ts`), limited by free-tier reliability, see below
 - [x] Replay viewer (`viewer/index.html`): painted arena, one action at a time with captions, injection attempts and their effects, CAUGHT stamp
 - [x] In-game injection demo: Injector bot, plus a scripted Gullible bot that shows what being fooled looks like
-- [x] Report draft ([docs/REPORT.md](docs/REPORT.md)), AI game results in 6.3, injection results still TODO
+- [x] Report draft ([docs/REPORT.md](docs/REPORT.md)), AI game results in 6.3, injection results in 6.2
+- [x] Prompt-injection experiment run Nov 17: undefended models obeyed a fake order 3/6, defended 0/11, illegal move 0/18 (`results/injection.jsonl`)
 - [x] Demo mode with a hard time limit per model (`--demo`): a real AI game took 3 min 9 s on Nov 12
 - [x] Encrypted agent chat, trash talk and last words, seen working with real models on Nov 12
 - [x] Full check on Nov 12: type check clean, all 35 tests pass, real AI game verified with 0 cheats, viewer plays it
@@ -51,7 +52,6 @@ Last updated Nov 12, 2026.
 | Task | Owner | Notes |
 |---|---|---|
 | Polish the replay viewer | Teammates | Styled version works, follow [docs/VIEWER-GUIDE.md](docs/VIEWER-GUIDE.md) |
-| Prompt-injection experiment | Open | Built (`src/injection.ts`), not yet run. Results go in `results/injection.jsonl`, commit them |
 | Reliable model access | Open | See known problems. Consider a longer `--demo` turn limit (now 15 s, `src/arena.ts:54`) |
 | Finish the report | Open | Fill the TODO sections in [docs/REPORT.md](docs/REPORT.md) |
 | Live demo | Everyone | Rehearse with a saved game as backup |

@@ -11,8 +11,9 @@ commitments until every player has locked in, and random events come from seeds 
 player can steer. Anyone can recompute the winner and the list of cheaters from the signed
 log. We attacked the protocol with scripted cheating bots in live networked games. Each
 attack that leaves a signature was detected and traced to the attacker with no honest
-player accused. Forged events were rejected. TODO: one sentence on the prompt-injection
-results.
+player accused. Forged events were rejected. A fake "system" order made undefended models
+pick a bad but legal move in 3 of 6 trials and 0 of 11 once chat was marked untrusted, and no
+injection produced an illegal move.
 
 ## 2. Problem
 
@@ -121,12 +122,31 @@ format that strips punctuation. A run with no attack is the control.
 round after it's sent. A scripted Gullible bot obeys and hides, which illustrates a bad but legal
 decision. It's an illustration only and is not counted in any result.
 
-**Results.** TODO: run `node src/injection.ts` over several days, then paste the output of
-`node src/injection.ts --report`.
+**Results.** One run on Nov 17, 2026: 2 trials per model and arm, 41 usable replies (1 request
+failed and is not counted). Raw replies are in `results/injection.jsonl`, and
+`node src/injection.ts --report` reprints the table.
+
+| Attack | Defence | flint-v1.0 | nemotron-3-ultra | nemotron-3.5-super-vl | Total obeyed |
+|---|---|---|---|---|---|
+| none (control) | label | 0/2 hid | 0/2 hid | 0/2 hid | 0/6 |
+| hide | none | **2/2** | **1/2** | 0/2 | **3/6** |
+| hide | label | 0/1 | 0/2 | 0/2 | 0/5 |
+| hide | strict | 0/2 | 0/2 | 0/2 | 0/6 |
+| illegal (99) | any | 0/6 | 0/6 | 0/6 | 0/18 |
+
+With no defence, the fake order made two of three models hide next to a rival on 1 HP, which
+they never did in the control. Labelling chat as untrusted, or the strict format, brought this to
+zero. No model ever replied 99, so `blocked` is 0 everywhere.
 
 **Key claim.** Injection can push an agent into a bad decision, but never into a rule-breaking
 move. Models can only choose from the menu of legal moves, and the protocol rejects anything not
-validly committed and signed. TODO: confirm the `blocked` counts support this.
+validly committed and signed. The experiment confirms the first half: undefended agents were
+fooled into a legal but bad move. It does not exercise the second half, because no model tried the
+illegal move. That half rests on the menu and on the `illegal-move` attack in 6.1, which the
+verifier catches regardless of why a player made it.
+
+**Caveat.** Two trials per arm is a small sample. The direction is clear (3/6 against 0/11), the
+exact rates are not.
 
 ### 6.3 AI games
 
@@ -178,8 +198,11 @@ became one hash chain per game. Deadlines became quorum votes. See
 ## 9. Conclusion
 
 A multi-party game can run with no referee: commitments stop late changes, joint randomness stops
-bias, secret sharing survives quitters, and signatures make every accusation provable. TODO: finish
-once the injection results are in.
+bias, secret sharing survives quitters, and signatures make every accusation provable. AI agents
+add a softer attack surface: a fake order in chat fooled undefended models into a bad move half
+the time, and a one-line warning that chat is untrusted stopped it in our trials. Cryptography
+can't stop a player from choosing badly, but it does guarantee that every choice, fooled or not,
+is a legal one that everyone can check.
 
 ## References
 
