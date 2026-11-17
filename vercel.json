@@ -1,0 +1,5 @@
+{
+  "buildCommand": "",
+  "outputDirectory": "viewer",
+  "functions": { "api/game.ts": { "maxDuration": 300 } }
+}

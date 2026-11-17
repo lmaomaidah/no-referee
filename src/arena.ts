@@ -8,7 +8,8 @@ import { runPlayer } from './player.ts'
 import type { Attack } from './player.ts'
 import { verify } from './verify.ts'
 import { gullible, injector, scripted } from './bots.ts'
-import { CHAT_URL, llm } from './llm.ts'
+import { CHAT_URL, keysOf, llm } from './llm.ts'
+import type { Keys, Stats } from './llm.ts'
 import { MODELS } from './models.ts'
 import type { Strategy } from './bots.ts'
 
@@ -38,31 +39,45 @@ export async function runArena(strategies: Strategy[], { rounds = 20, timeoutMs 
   }
 }
 
+export const modelName = (m: string) => m.split('/')[1].replace(':free', '')
+
+/** The demo game: three AI models and the Injector bot, 12 rounds, 15 s per model turn. Used by the CLI and the web app. */
+export async function aiGame(keys: Keys, { rounds = 12, waitMs = 15_000 } = {}) {
+  const stats: Stats[] = MODELS.map(() => ({ calls: 0, fallbacks: 0, told: 0, why: {} }))
+  const players = [...MODELS.map((m, i) => llm(m, keys, stats[i], CHAT_URL, waitMs)), injector]
+  const labels = [...MODELS.map(modelName), 'Injector bot']
+  const game = await runArena(players, { rounds, timeoutMs: 90_000, settleMs: 300 })
+  const names = Object.fromEntries(game.keys.map((k, i) => [k, labels[i]]))
+  return { ...game, names, stats, replay: { ...game.result, names, chat: game.chat } }
+}
+
 /**
  * `node src/arena.ts` plays bots. `--ai [rounds]` puts the MODELS in, plus one bot.
  * `--demo` is an AI game built to end on time: 12 rounds, 15 s per model, about 39 requests.
  * `--cheat <kind>` is a bot game where one player attacks in round 3, no requests. Kinds are listed in Attack.
+ * Keys come from OPENROUTER_API_KEY, comma-separated for several: the next is used when one hits its daily limit.
  */
 if (import.meta.main) {
   const demo = process.argv[2] === '--demo'
   const cheat = process.argv[2] === '--cheat' ? (process.argv[3] ?? 'equivocate') as Attack['kind'] : null
   const ai = demo || process.argv[2] === '--ai'
   const rounds = demo || cheat ? 12 : Number(process.argv[3] ?? 20)
-  const stats = MODELS.map(() => ({ calls: 0, fallbacks: 0, told: 0, why: {} }))
   if (ai) process.loadEnvFile()
-  const key = process.env.OPENROUTER_API_KEY ?? ''
-  const players = ai ? [...MODELS.map((m, i) => llm(m, key, stats[i], CHAT_URL, demo ? 15_000 : 60_000)), injector] : [scripted, gullible, injector, scripted]
-  const labels = ai ? [...MODELS.map(m => m.split('/')[1].replace(':free', '')), 'Injector bot'] : players.map((_, i) => ['Bot 1', 'Gullible bot', 'Injector bot', cheat ? 'Cheater bot' : 'Bot 4'][i])
-
-  const { log, config, keys, chat, result } = await runArena(players, {
-    rounds, timeoutMs: ai ? 90_000 : cheat ? 5000 : 30_000, settleMs: 300,
-    attacks: cheat ? { 3: { kind: cheat, round: 3 } } : {},
-  })
-  const names = Object.fromEntries(keys.map((k, i) => [k, labels[i]]))
+  const { log, config, names, chat, result, replay, stats } = ai
+    ? await aiGame(keysOf(process.env.OPENROUTER_API_KEY), { rounds, waitMs: demo ? 15_000 : 60_000 })
+    : await (async () => {
+      const labels = ['Bot 1', 'Gullible bot', 'Injector bot', cheat ? 'Cheater bot' : 'Bot 4']
+      const game = await runArena([scripted, gullible, injector, scripted], {
+        rounds, timeoutMs: cheat ? 5000 : 30_000, settleMs: 300,
+        attacks: cheat ? { 3: { kind: cheat, round: 3 } } : {},
+      })
+      const names = Object.fromEntries(game.keys.map((k, i) => [k, labels[i]]))
+      return { ...game, names, stats: [], replay: { ...game.result, names, chat: game.chat } }
+    })()
   mkdirSync('out', { recursive: true })
   writeFileSync('out/log.json', JSON.stringify({ config, log }))
-  writeFileSync('viewer/replay.json', JSON.stringify({ ...result, names, chat }))
+  writeFileSync('viewer/replay.json', JSON.stringify(replay))
   console.log(`${result.status}: winner ${result.winner && names[result.winner]}, ${result.rounds.length} rounds, ${log.length} events, ${result.cheats.length} cheats`)
   for (const m of chat) console.log(`r${m.round} ${names[m.from]} -> ${names[m.to]}: ${m.text}`)
-  if (ai) MODELS.forEach((m, i) => console.log(`${m}: ${stats[i].calls} calls, ${stats[i].told} messages sent, ${stats[i].fallbacks} fell back to the scripted bot ${JSON.stringify(stats[i].why)}`))
+  stats.forEach((s, i) => console.log(`${MODELS[i]}: ${s.calls} calls, ${s.told} messages sent, ${s.fallbacks} fell back to the scripted bot ${JSON.stringify(s.why)}`))
 }

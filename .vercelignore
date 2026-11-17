@@ -1,0 +1,7 @@
+.env
+.env.*
+out
+results
+viewer/replay.json
+.superpowers
+docs/REPORT.pdf

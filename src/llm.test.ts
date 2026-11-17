@@ -6,7 +6,7 @@ import type { AddressInfo } from 'node:net'
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { choose, llm, menu, tellOf } from './llm.ts'
+import { askWith, choose, findWorkingKey, keysOf, llm, menu, tellOf } from './llm.ts'
 import { judge, runTrials, summary } from './injection.ts'
 
 const me = 'a'.repeat(64), other = 'b'.repeat(64)
@@ -79,4 +79,28 @@ test('the experiment saves each trial and stops at the daily limit', async () =>
   const rows = readFileSync(file, 'utf8').trim().split('\n').map(l => JSON.parse(l))
   assert.equal(rows.length, 3)
   assert.match(summary(rows), /m/)
+})
+
+test('a key at its daily limit is skipped, and none left means none found', async () => {
+  const dead = new Set(['k1', 'k3'])
+  const server = createServer((req, res) => {
+    const key = req.headers.authorization!.slice(7)
+    if (dead.has(key)) { res.writeHead(429); res.end('Rate limit exceeded: free-models-per-day') }
+    else res.end(JSON.stringify({ choices: [{ message: { content: key } }] }))
+  })
+  await new Promise<void>(ok => server.listen(0, '127.0.0.1', ok))
+  const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
+  try {
+    const keys = keysOf('k1, k2', 'k3')
+    const res = await askWith(keys, url, 'm', 'hi', 5000)
+    assert.equal((await res.json()).choices[0].message.content, 'k2')
+    assert.equal(keys.at, 1)
+    dead.add('k2')
+    assert.equal(await findWorkingKey(keysOf('k1,k2,k3'), 'm', url), false)
+    const two = keysOf('k1,k4,k3')
+    assert.equal(await findWorkingKey(two, 'm', url), true)
+    assert.equal(two.at, 1)
+  } finally {
+    server.close()
+  }
 })

@@ -71,13 +71,40 @@ export const callModel = (url: string, key: string, model: string, content: stri
 
 export type Stats = { calls: number, fallbacks: number, told: number, why: Record<string, number> }
 
+/** API keys shared by every AI player in a game. `at` moves on when a key hits its daily limit. */
+export type Keys = { list: string[], at: number }
+export const keysOf = (...keys: (string | undefined)[]): Keys =>
+  ({ list: keys.flatMap(k => k?.split(',') ?? []).map(k => k.trim()).filter(Boolean), at: 0 })
+
+const dailyLimit = async (res: Response) => res.status === 429 && (await res.clone().text()).includes('per-day')
+
+/** Calls with the current key, moving to the next one while keys hit their daily limit. */
+export async function askWith(keys: Keys, url: string, model: string, content: string, waitMs: number) {
+  for (;;) {
+    const i = keys.at
+    const res = await callModel(url, keys.list[i] ?? '', model, content, waitMs)
+    if (i >= keys.list.length - 1 || !(await dailyLimit(res))) return res
+    if (keys.at === i) keys.at = i + 1   // another player may have moved on already
+  }
+}
+
+/** Moves `keys.at` to the first key that still has requests today. Costs one tiny request. False if none has. */
+export async function findWorkingKey(keys: Keys, model: string, url = CHAT_URL) {
+  for (; keys.at < keys.list.length; keys.at++) {
+    const res = await callModel(url, keys.list[keys.at], model, 'Reply OK.', 30_000).catch(() => null)
+    if (!res || !(res.status === 401 || res.status === 403 || await dailyLimit(res))) return true   // a slow model isn't a dead key
+  }
+  return false
+}
+
 /**
  * An AI tribute on any OpenAI-compatible chat endpoint. If the model fails or answers
  * badly the scripted bot plays that turn, and `stats` records it so results stay honest.
  */
-export function llm(model: string, key: string, stats: Stats = { calls: 0, fallbacks: 0, told: 0, why: {} },
+export function llm(model: string, key: string | Keys, stats: Stats = { calls: 0, fallbacks: 0, told: 0, why: {} },
   url = CHAT_URL, waitMs = 60_000): Strategy {
-  const ask = (content: string) => callModel(url, key, model, content, waitMs)
+  const keys = typeof key === 'string' ? keysOf(key) : key
+  const ask = (content: string) => askWith(keys, url, model, content, waitMs)
 
   return async (state, me, talk) => {
     if (talk.dying) {

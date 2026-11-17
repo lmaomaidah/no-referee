@@ -9,6 +9,7 @@ Information Security course project, due **Nov 30, 2026**.
 
 - **What is this? Read [docs/EXPLAINED.md](docs/EXPLAINED.md).** No technical background needed.
 - **Joining the team? Read [docs/TEAM-GUIDE.md](docs/TEAM-GUIDE.md).**
+- **Live site: https://no-referee.vercel.app** A pixel desktop with a step-by-step guide, a sealed-move demo, and a button that runs a real AI game.
 - **The technical report:** [docs/REPORT.pdf](docs/REPORT.pdf), built from [docs/REPORT.md](docs/REPORT.md).
 
 ## Run it
@@ -26,6 +27,14 @@ node src/injection.ts --report   # print the results so far, no requests
 npm test                   # attack suite and live games, a few minutes
 node docs/build-pdf.ts     # rebuild docs/REPORT.pdf from docs/REPORT.md (needs Chrome or Edge)
 ```
+
+## Web app
+
+`viewer/` is the site and `api/game.ts` runs a live game on Vercel (about 3 minutes, under the 5-minute limit).
+API keys live only in the Vercel environment variable `OPENROUTER_KEYS`, comma-separated. When a key hits its daily
+limit the next one is used, and when all are used up the site plays the saved game (`viewer/backup-replay.json`).
+To add a key: `vercel env rm OPENROUTER_KEYS production`, then `vercel env add OPENROUTER_KEYS production --sensitive`
+with every key, then `vercel deploy --prod`.
 
 ## Status
 
@@ -46,7 +55,8 @@ Last updated Nov 17, 2026.
 - [x] Prompt-injection experiment run Nov 17: undefended models obeyed a fake order 3/6, defended 0/11, illegal move 0/18 (`results/injection.jsonl`)
 - [x] Demo mode with a hard time limit per model (`--demo`): a real AI game took 3 min 9 s on Nov 12
 - [x] Encrypted agent chat, trash talk and last words, seen working with real models on Nov 12
-- [x] Full check on Nov 17: type check clean, all 33 tests pass, real AI game verified with 0 cheats
+- [x] Full check on Nov 17: type check clean, all 34 tests pass, real AI game verified with 0 cheats
+- [x] Web app live on Vercel (Nov 17): pixel desktop UI, setup wizard, guided tour, live AI games with key failover. A live game there took 176 s with 16 of 24 real model moves
 - [x] Backup demo game saved (`viewer/backup-replay.json`): real AI game from Nov 17, 12 rounds, 0 cheats, 29 chat lines
 
 ### Left
